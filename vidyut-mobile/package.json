@@ -1,0 +1,49 @@
+{
+  "name": "vidyut-mobile",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/netinfo": "12.0.1",
+    "@tanstack/react-query": "^5.83.0",
+    "axios": "^1.9.0",
+    "babel-preset-expo": "~57.0.0",
+    "expo": "~57.0.12",
+    "expo-auth-session": "~57.0.6",
+    "expo-constants": "~57.0.9",
+    "expo-device": "~57.0.1",
+    "expo-font": "~57.0.1",
+    "expo-haptics": "~57.0.1",
+    "expo-image-picker": "~57.0.9",
+    "expo-linking": "~57.0.5",
+    "expo-location": "~57.0.9",
+    "expo-notifications": "~57.0.10",
+    "expo-router": "~57.0.12",
+    "expo-secure-store": "~57.0.1",
+    "expo-sharing": "~57.0.11",
+    "expo-status-bar": "~57.0.1",
+    "expo-web-browser": "~57.0.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-ble-plx": "^3.5.1",
+    "react-native-maps": "1.27.2",
+    "react-native-qrcode-svg": "^6.3.21",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "^4.10.0",
+    "react-native-svg": "15.15.4",
+    "zustand": "^5.0.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit"
+  },
+  "private": true
+}

@@ -1,0 +1,67 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: vidyut-backend
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration/{vendor}
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:no-reply@vidyut.local}
+    password: ${SMTP_PASS:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+server:
+  port: ${PORT:8080}
+
+vidyut:
+  demo-data:
+    enabled: ${VIDYUT_DEMO_DATA_ENABLED:${DEMO_SEED_ENABLED:false}}
+  oauth:
+    google-client-ids: ${GOOGLE_CLIENT_IDS:${GOOGLE_CLIENT_ID:558967442483-k5mnia7mcfjal59sjfgcn2iumn8pku3g.apps.googleusercontent.com}}
+  payments:
+    demo-enabled: false
+  agent:
+    base-url: ${VIDYUT_AGENT_BASE_URL:http://localhost:8001}
+  autopilot:
+    current-trip-max-age-hours: ${VIDYUT_AUTOPILOT_CURRENT_TRIP_MAX_AGE_HOURS:72}
+  routing:
+    google:
+      api-key: ${GOOGLE_MAPS_API_KEY:${GOOGLE_ROUTES_API_KEY:}}
+      enabled: ${VIDYUT_GOOGLE_ROUTES_ENABLED:true}
+    osrm:
+      base-url: ${VIDYUT_OSRM_BASE_URL:http://localhost:5000}
+      reference-base-url: ${VIDYUT_OSRM_REFERENCE_BASE_URL:https://router.project-osrm.org}
+      profile: ${VIDYUT_OSRM_PROFILE:driving}
+      snap-radius-meters: ${VIDYUT_OSRM_SNAP_RADIUS_METERS:20000}
+      max-table-locations: ${VIDYUT_OSRM_MAX_TABLE_LOCATIONS:100}
+    geocoder:
+      base-url: ${VIDYUT_GEOCODER_BASE_URL:https://nominatim.openstreetmap.org}
+      user-agent: ${VIDYUT_GEOCODER_USER_AGENT:Vidyut-EV-Routing/1.0}
+      country-codes: ${VIDYUT_GEOCODER_COUNTRY_CODES:in}
+      minimum-request-interval-ms: ${VIDYUT_GEOCODER_MIN_INTERVAL_MS:1000}
+      cache-size: ${VIDYUT_GEOCODER_CACHE_SIZE:512}
+    external-map-base-url: ${VIDYUT_EXTERNAL_MAP_BASE_URL:https://www.openstreetmap.org/directions}
+    corridor-margin-degrees: ${VIDYUT_ROUTING_CORRIDOR_MARGIN_DEGREES:2.5}
+    corridor-time-km: ${VIDYUT_ROUTING_CORRIDOR_TIME_KM:8}
+    corridor-balanced-km: ${VIDYUT_ROUTING_CORRIDOR_BALANCED_KM:12}
+    corridor-cost-km: ${VIDYUT_ROUTING_CORRIDOR_COST_KM:20}
+    stop-endpoint-buffer-km: ${VIDYUT_ROUTING_STOP_ENDPOINT_BUFFER_KM:10}
+
+demo:
+  seed:
+    enabled: ${DEMO_SEED_ENABLED:false}
+  account:
+    password: ${DEMO_ACCOUNT_PASSWORD:}

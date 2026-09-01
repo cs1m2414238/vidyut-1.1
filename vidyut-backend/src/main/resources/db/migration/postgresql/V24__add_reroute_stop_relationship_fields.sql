@@ -1,0 +1,11 @@
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS selection_type VARCHAR(50) DEFAULT 'PRIMARY';
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS replaces_station_id BIGINT;
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS replaces_station_name VARCHAR(255);
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS reroute_reason VARCHAR(100);
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS additional_distance_km DOUBLE PRECISION;
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS additional_minutes INTEGER;
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS additional_cost DOUBLE PRECISION;
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS removal_reason VARCHAR(100);
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS replaced_by_station_id BIGINT;
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS replaced_by_station_name VARCHAR(255);
+ALTER TABLE autopilot_stops ADD COLUMN IF NOT EXISTS original_stop_index INTEGER;

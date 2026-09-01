@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <title>Vidyut</title>
+  <defs>
+    <linearGradient id="vidyut-logo-gradient" x1="34" y1="20" x2="164" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d9f99d"/>
+      <stop offset="0.25" stop-color="#a3e635"/>
+      <stop offset="0.65" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+  <path d="M38 30 65 36l35 129 28-90-14 5 51-65-23 43h16l-58 127Z" fill="url(#vidyut-logo-gradient)"/>
+</svg>

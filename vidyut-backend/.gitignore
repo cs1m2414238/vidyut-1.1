@@ -1,0 +1,19 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!target/classes/META-INF/
+!target/test-classes/META-INF/
+
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Logs & Environment
+*.log
+.env
+.env.local
+
+# Local-only secrets (never commit)
+config/application-local.yml

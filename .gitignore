@@ -1,0 +1,58 @@
+# IDE & Tooling Directories
+.codex*
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Build Artifacts, Temp & Binaries
+**/target/
+**/node_modules/
+**/dist/
+**/build/
+**/builds/
+**/.vite/
+**/out/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/*.egg-info/
+**/tmp/
+tmp/
+.npm
+*.log
+*.err
+*.py[cod]
+.coverage
+
+# Environment & Secret Files
+.env
+.env.*
+.env.local
+.env.*.local
+**/.env.production
+!*.env.example
+
+*.pem
+*.key
+*service-account*.json
+credentials.json
+vidyut-ai/.env
+vidyut-backend/.env
+vidyut-web/.env
+vidyut-mobile/.env
+.expo/
+**/expo-env.d.ts
+
+# Firebase Deployment Artifacts
+**/.firebase/
+# Note: firebase.json and .firebaserc are intentionally tracked
+
+# OS & System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local scratch & temp work
+scratch/

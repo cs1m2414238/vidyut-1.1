@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vidyut}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000 # 24 hours
+
+vidyut:
+  admin:
+    bootstrap:
+      enabled: ${VIDYUT_ADMIN_BOOTSTRAP_ENABLED:false}
+      email: ${VIDYUT_ADMIN_EMAIL:admin@vidyut.local}
+      password: ${VIDYUT_ADMIN_PASSWORD:}
+      name: ${VIDYUT_ADMIN_NAME:Vidyut Super Admin}
+  demo-data:
+    enabled: ${VIDYUT_DEMO_DATA_ENABLED:true}
+  routing:
+    osrm:
+      reference-base-url: ${VIDYUT_OSRM_REFERENCE_BASE_URL:https://router.project-osrm.org}
+  payments:
+    demo-enabled: ${VIDYUT_DEMO_PAYMENTS_ENABLED:true}

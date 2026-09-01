@@ -1,0 +1,499 @@
+/* Vidyut Smart City Landing Page CSS */
+
+.landing-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #020f12;
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* HERO CONTAINER */
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Background image with slow 12s zoom */
+.hero-background-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hero-background {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  animation: heroZoom 12s ease-out forwards;
+}
+
+@keyframes heroZoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+/* Dark gradient overlay over left side for readability */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(2, 15, 18, 0.94) 0%,
+    rgba(2, 15, 18, 0.78) 35%,
+    rgba(2, 15, 18, 0.25) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Top Subtle Vignette & Glow */
+.hero::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(2, 15, 18, 0.6) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* NAVBAR (Stagger 0.1s) */
+.navbar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 64px;
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: navFadeDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.nav-brand-svg {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.8));
+}
+
+.nav-brand-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #ffffff;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link-btn {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 200ms ease, text-shadow 200ms ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-link-btn:hover {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-login {
+  padding: 10px 22px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.btn-login:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-get-started {
+  padding: 10px 24px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+  transition: all 200ms ease;
+}
+
+.btn-get-started:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.6);
+  filter: brightness(1.05);
+}
+
+/* HERO MAIN BODY */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  padding: 0 64px;
+  margin-top: auto;
+  margin-bottom: auto;
+  max-width: 680px;
+}
+
+/* Heading VIDYUT (Stagger 0.3s) */
+.hero-heading {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: heroSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* Tagline (Stagger 0.5s) */
+.hero-tagline {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: heroSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #4ade80;
+  margin: 12px 0 0;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Description (Stagger 0.7s) */
+.hero-description {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: heroSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+  font-size: 1.15rem;
+  line-height: 1.65;
+  color: rgba(241, 245, 249, 0.9);
+  margin: 20px 0 36px;
+  max-width: 540px;
+}
+
+/* CTA Buttons (Stagger 0.9s) */
+.hero-cta-group {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: heroSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.45);
+  transition: all 200ms ease;
+}
+
+.cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(34, 197, 94, 0.6);
+  filter: brightness(1.06);
+}
+
+.cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 28px;
+  border-radius: 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-2px);
+}
+
+/* STATS ROW (Stagger 1.1s) */
+.hero-stats-bar {
+  position: relative;
+  z-index: 10;
+  padding: 32px 64px 48px;
+  display: flex;
+  align-items: center;
+  gap: 64px;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: heroSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.1s forwards;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 2.2rem;
+  font-weight: 850;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Keyframes for entrance animation */
+@keyframes navFadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* SECTIONS BELOW HERO (ECOSYSTEM FEATURES) */
+.landing-section {
+  position: relative;
+  z-index: 10;
+  padding: 100px 64px;
+  background: #041418;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 60px;
+}
+
+.section-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  font-size: 1.08rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+/* ECOSYSTEM GRID */
+.ecosystem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.ecosystem-card {
+  padding: 36px 30px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  transition: all 250ms ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ecosystem-card:hover {
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 20px rgba(34, 197, 94, 0.15);
+}
+
+.card-icon-box {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(34, 197, 94, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4ade80;
+  margin-bottom: 24px;
+}
+
+.card-title {
+  font-size: 1.35rem;
+  font-weight: 750;
+  color: #ffffff;
+  margin: 0 0 12px;
+}
+
+.card-desc {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.card-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #4ade80;
+  font-size: 0.92rem;
+  font-weight: 700;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: gap 200ms ease;
+}
+
+.card-link-btn:hover {
+  gap: 12px;
+}
+
+/* FOOTER */
+.landing-footer {
+  padding: 40px 64px;
+  background: #020b0d;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 20px 32px;
+  }
+  .nav-links {
+    display: none;
+  }
+  .hero-content {
+    padding: 0 32px;
+  }
+  .hero-heading {
+    font-size: 3.5rem;
+  }
+  .hero-stats-bar {
+    padding: 24px 32px 36px;
+    gap: 32px;
+  }
+  .ecosystem-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

@@ -1,0 +1,12 @@
+.gcloudignore
+.git
+.gitignore
+/.idea/
+/target/
+/config/
+/scripts/
+.env
+.env.*
+*.log
+*.pem
+*.key

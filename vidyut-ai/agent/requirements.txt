@@ -1,0 +1,7 @@
+google-adk==2.6.3
+fastapi==0.141.1
+httpx==0.28.1
+python-dotenv==1.2.2
+uvicorn[standard]==0.52.1
+google-cloud-firestore>=2.14.0
+google-cloud-pubsub>=2.19.0

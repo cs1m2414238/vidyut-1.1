@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+vidyut_agent/.env
+vidyut_agent/.env.*
+vidyut_agent/__pycache__/
+vidyut_agent/.adk/
+tests/
+.adk/
+*.log

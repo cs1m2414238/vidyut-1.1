@@ -1,0 +1,19 @@
+package com.vidyut.marketplace.entity;
+
+public enum InstallationStatus {
+    REQUESTED,
+    UNDER_REVIEW,
+    SITE_SURVEY_REQUESTED,
+    SITE_SURVEY_SCHEDULED,
+    SURVEY_COMPLETED,
+    PROPOSAL_SENT,
+    ACCEPTED,
+    INSTALLATION_SCHEDULED,
+    INSTALLING,
+    INSTALLED,
+    COMMISSIONED,
+    LIVE,
+    DECLINED,
+    CANCELLED,
+    EXPIRED
+}

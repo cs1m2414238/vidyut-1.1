@@ -1,0 +1,12 @@
+package com.vidyut.agent.entity;
+
+public enum AgentEventType {
+    CONNECTOR_FAULTED,
+    CONNECTOR_RESTORED,
+    TRIP_STARTED,
+    TRIP_AT_RISK,
+    RECOVERY_PREPARED,
+    RECOVERY_EXECUTED,
+    AGENT_ACTION_PREPARED,
+    AGENT_ACTION_EXECUTED
+}

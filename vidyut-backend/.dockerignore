@@ -1,0 +1,10 @@
+.git
+/.idea/
+/target/
+/config/
+/scripts/
+.env
+.env.*
+*.log
+*.pem
+*.key

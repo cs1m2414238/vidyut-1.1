@@ -1,0 +1,19 @@
+{
+  "name": "ev-vidyut-app",
+  "version": "1.0.0",
+  "scripts": {
+    "clear-ports": "node scripts/clear-ports.js",
+    "clean": "node scripts/clear-ports.js",
+    "osrm:start": "docker start vidyut-osrm",
+    "osrm:stop": "docker stop vidyut-osrm",
+    "osrm:logs": "docker logs -f vidyut-osrm",
+    "dev": "node scripts/clear-ports.js && npm run osrm:start && npx concurrently -k \"cd vidyut-backend && mvn spring-boot:run -Dspring-boot.run.profiles=dev,local\" \"cd vidyut-web && npm run dev\" \"cd vidyut-ai/agent && .venv\\Scripts\\python -m vidyut_agent\""
+  },
+  "dependencies": {
+    "@types/react": "~19.2.4",
+    "expo": "^57.0.12",
+    "react": "19.2.3",
+    "react-native": "0.86.0",
+    "typescript": "~6.0.3"
+  }
+}

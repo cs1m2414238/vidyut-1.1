@@ -1,0 +1,6 @@
+.agent-recovery-panel{background:var(--card-bg,#fff);border:1px solid #e5af45;border-radius:18px;padding:24px;color:var(--text-primary,#132838);margin-bottom:20px}
+.agent-recovery-eyebrow{font-size:11px;letter-spacing:.08em;font-weight:800;color:#966600}
+.agent-recovery-panel h2{font-size:22px;margin:10px 0}.agent-recovery-panel h3{font-size:17px;margin-top:22px}
+.agent-recovery-panel p,.agent-recovery-panel li{font-size:13px;line-height:1.6}.agent-recovery-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:20px 0}
+.agent-recovery-metrics dt{font-size:12px;opacity:.75}.agent-recovery-metrics dd{font-size:15px;font-weight:650;margin:5px 0 0}
+.agent-recovery-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}.agent-recovery-actions button{background:#087b57;color:white;border:0;padding:11px 17px;border-radius:9px;cursor:pointer}.agent-recovery-actions button:disabled{opacity:.5;cursor:wait}.agent-recovery-actions input{width:75px;padding:7px;border:1px solid #bcc7c3;border-radius:6px}

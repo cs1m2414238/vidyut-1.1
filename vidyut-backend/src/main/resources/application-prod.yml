@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql:///vidyut?cloudSqlInstance=vidyut-db-project:asia-south1:free-trial-vidyut-db&socketFactory=com.google.cloud.sql.postgres.SocketFactory}
+    username: ${DB_USER:${SPRING_DATASOURCE_USERNAME:vidyut_app}}
+    password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD:}}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000

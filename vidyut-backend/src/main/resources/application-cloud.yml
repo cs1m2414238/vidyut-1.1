@@ -1,0 +1,40 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql:///vidyut?cloudSqlInstance=vidyut-db-project:asia-south1:free-trial-vidyut-db&socketFactory=com.google.cloud.sql.postgres.SocketFactory}
+    username: ${DB_USER:${SPRING_DATASOURCE_USERNAME:vidyut_app}}
+    password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD:}}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+
+vidyut:
+  admin:
+    bootstrap:
+      enabled: ${VIDYUT_ADMIN_BOOTSTRAP_ENABLED:false}
+      email: ${VIDYUT_ADMIN_EMAIL:admin@vidyut.local}
+      password: ${VIDYUT_ADMIN_PASSWORD:}
+      name: ${VIDYUT_ADMIN_NAME:Vidyut Super Admin}
+  demo-data:
+    enabled: ${VIDYUT_DEMO_DATA_ENABLED:${DEMO_SEED_ENABLED:false}}
+  payments:
+    demo-enabled: ${VIDYUT_DEMO_PAYMENTS_ENABLED:false}
+  routing:
+    osrm:
+      base-url: ${VIDYUT_OSRM_BASE_URL:http://localhost:5000}
+      reference-base-url: ${VIDYUT_OSRM_REFERENCE_BASE_URL:https://router.project-osrm.org}
+
+demo:
+  seed:
+    enabled: ${DEMO_SEED_ENABLED:false}
+  account:
+    password: ${DEMO_ACCOUNT_PASSWORD:}

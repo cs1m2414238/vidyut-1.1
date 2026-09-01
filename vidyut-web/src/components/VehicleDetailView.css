@@ -1,0 +1,123 @@
+.vehicle-detail-page { color: #101828; }
+.vehicle-detail-back { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 17px; padding: 0; border: 0; color: #08784f; background: transparent; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
+.vehicle-detail-header { display: flex; align-items: center; justify-content: space-between; gap: 22px; margin-bottom: 22px; }
+.vehicle-detail-title-wrap { display: flex; min-width: 0; align-items: center; gap: 14px; }
+.vehicle-detail-title-icon { display: grid; width: 53px; height: 53px; flex: 0 0 auto; place-items: center; border-radius: 16px; color: #078a59; background: #e7f7f0; }
+.vehicle-detail-title-wrap > div { min-width: 0; }
+.vehicle-detail-title-wrap span:not(.vehicle-detail-title-icon) { color: #078a59; font-size: 9px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+.vehicle-detail-title-wrap h1 { overflow: hidden; margin: 2px 0 3px; font-size: clamp(24px,3vw,34px); line-height: 1.08; text-overflow: ellipsis; white-space: nowrap; }
+.vehicle-detail-title-wrap p { margin: 0; color: #667085; font-size: 10px; }
+.vehicle-detail-title-wrap .vehicle-demo-source { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 5px 8px; border: 1px solid #f0ce9c; border-radius: 999px; color: #9a4f08; background: #fff8ed; font-size: 8px; font-weight: 850; letter-spacing: 0; text-transform: none; }
+.vehicle-detail-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 9px; }
+.vehicle-detail-status { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border-radius: 999px; color: #667085; background: #f2f4f7; font-size: 9px; font-weight: 900; }
+.vehicle-detail-status i { width: 7px; height: 7px; border-radius: 50%; background: #98a2b3; }
+.vehicle-detail-status.connected { color: #08784f; background: #e7f7ef; }
+.vehicle-detail-status.connected i { background: #12b76a; box-shadow: 0 0 0 3px rgba(18,183,106,.16); }
+.vehicle-detail-status.disconnected { color: #b54708; background: #fff4e5; }
+.vehicle-detail-status.disconnected i { background: #f79009; }
+.vehicle-secondary-button,.vehicle-primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 13px; border-radius: 10px; font: inherit; font-size: 10px; font-weight: 850; cursor: pointer; }
+.vehicle-secondary-button { border: 1px solid #cfded8; color: #08784f; background: #fff; }
+.vehicle-secondary-button:hover { border-color: #8bc7ae; background: #f6fcf9; }
+.vehicle-primary-button { border: 1px solid #078a59; color: #fff; background: #078a59; box-shadow: 0 8px 18px rgba(7,138,89,.18); }
+.vehicle-primary-button:hover { background: #066e49; }
+.vehicle-secondary-button:disabled,.vehicle-primary-button:disabled { cursor: wait; opacity: .6; }
+.vehicle-detail-message { display: flex; align-items: center; gap: 8px; margin: 0 0 17px; padding: 11px 13px; border: 1px solid; border-radius: 11px; font-size: 10px; font-weight: 750; }
+.vehicle-detail-message.error { border-color: #f1b7af; color: #b42318; background: #fff4f2; }
+.vehicle-detail-message.success { border-color: #a7dfc5; color: #08784f; background: #effbf5; }
+.vehicle-detail-message.info { border-color: #b8d5ee; color: #175a8b; background: #f0f8ff; }
+.vehicle-detail-message svg { flex: 0 0 auto; }
+.vehicle-detail-metrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 13px; margin-bottom: 16px; }
+.vehicle-detail-metrics article { position: relative; overflow: hidden; min-height: 128px; padding: 17px; border: 1px solid #e5e9ee; border-radius: 16px; background: #fff; box-shadow: 0 7px 20px rgba(16,24,40,.035); }
+.vehicle-detail-metrics article > span { display: grid; width: 34px; height: 34px; margin-bottom: 13px; place-items: center; border-radius: 10px; color: #078a59; background: #e8f7f0; }
+.vehicle-detail-metrics article.is-charging > span { color: #fff; background: #078a59; box-shadow: 0 0 0 6px rgba(7,138,89,.1); }
+.vehicle-detail-metrics small { display: block; color: #667085; font-size: 9px; font-weight: 700; }
+.vehicle-detail-metrics strong { display: block; overflow: hidden; margin: 4px 0; font-size: 18px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+.vehicle-detail-metrics p { overflow: hidden; margin: 0; color: #98a2b3; font-size: 8.5px; text-overflow: ellipsis; white-space: nowrap; }
+.vehicle-detail-grid { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(280px,.65fr); gap: 16px; }
+.vehicle-live-card { display: flex; min-height: 310px; align-items: center; justify-content: space-between; gap: 26px; overflow: hidden; padding: 34px; border-radius: 21px; color: #fff; background: radial-gradient(circle at 85% 10%,rgba(46,213,141,.25),transparent 32%),linear-gradient(140deg,#063c2c,#08784f 58%,#0b9a65); box-shadow: 0 18px 35px rgba(5,82,56,.2); }
+.vehicle-live-card.charging { background: radial-gradient(circle at 88% 8%,rgba(178,255,213,.34),transparent 30%),linear-gradient(140deg,#052f24,#08784f 54%,#10a76c); }
+.vehicle-live-copy { max-width: 480px; }
+.vehicle-live-eyebrow { color: #a9ebcf; font-size: 9px; font-weight: 900; letter-spacing: .13em; }
+.vehicle-live-copy h2 { margin: 8px 0 9px; font-size: clamp(25px,3vw,38px); letter-spacing: -.035em; }
+.vehicle-live-copy > p { max-width: 450px; margin: 0; color: #d9f2e7; font-size: 11px; line-height: 1.65; }
+.vehicle-live-indicator { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 6px 9px; border: 1px solid rgba(181,247,218,.34); border-radius: 999px; color: #c9f6e3; background: rgba(255,255,255,.08); font-size: 8px; font-weight: 800; }
+.vehicle-live-indicator svg { animation: vehicle-live-pulse 1.8s ease-in-out infinite; }
+.vehicle-live-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.vehicle-live-actions button { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border: 1px solid #fff; border-radius: 10px; color: #07563c; background: #fff; font: inherit; font-size: 10px; font-weight: 850; cursor: pointer; }
+.vehicle-live-actions button.ghost { border-color: rgba(255,255,255,.42); color: #fff; background: rgba(255,255,255,.09); }
+.vehicle-live-actions button:disabled { cursor: wait; opacity: .65; }
+.vehicle-battery-ring { display: grid; width: 155px; height: 155px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: conic-gradient(#9cf0c9 var(--vehicle-battery-level),rgba(255,255,255,.14) 0); box-shadow: 0 0 0 11px rgba(255,255,255,.06); }
+.vehicle-battery-ring > div { display: flex; width: 119px; height: 119px; align-items: center; justify-content: center; flex-direction: column; border-radius: 50%; color: #fff; background: #08704c; box-shadow: inset 0 0 25px rgba(255,255,255,.08); }
+.vehicle-battery-ring strong { margin: 4px 0 1px; font-size: 25px; }
+.vehicle-battery-ring span { color: #bfead8; font-size: 8px; font-weight: 750; text-transform: uppercase; }
+.vehicle-info-card { padding: 21px; border: 1px solid #e4e9ed; border-radius: 18px; background: #fff; box-shadow: 0 8px 23px rgba(16,24,40,.04); }
+.vehicle-info-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 17px; }
+.vehicle-info-card-head > span { display: grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; border-radius: 10px; color: #078a59; background: #e9f7f1; }
+.vehicle-info-card-head h2 { margin: 0; font-size: 14px; }
+.vehicle-info-card-head p { margin: 3px 0 0; color: #98a2b3; font-size: 8px; }
+.vehicle-last-charge-content { padding: 13px; border-radius: 12px; background: #f7faf9; }
+.vehicle-last-charge-content > strong { display: block; margin-bottom: 9px; font-size: 13px; }
+.vehicle-last-charge-content p { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; color: #667085; font-size: 9px; }
+.vehicle-info-empty { display: flex; min-height: 135px; align-items: center; justify-content: center; flex-direction: column; color: #98a2b3; text-align: center; }
+.vehicle-info-empty strong { margin: 8px 0 3px; color: #475467; font-size: 11px; }
+.vehicle-info-empty p { max-width: 270px; margin: 0; font-size: 8.5px; line-height: 1.5; }
+.vehicle-capability-list { margin: 0; padding: 0; list-style: none; }
+.vehicle-capability-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #eef1f3; font-size: 9px; }
+.vehicle-capability-list li:last-child { border: 0; }
+.vehicle-capability-list li span { display: flex; align-items: center; gap: 8px; color: #475467; }
+.vehicle-capability-list strong { flex: 0 0 auto; color: #98a2b3; font-size: 8px; }
+.vehicle-capability-list strong.supported { padding: 5px 7px; border-radius: 99px; color: #08784f; background: #e8f7f0; }
+.vehicle-capability-note { display: flex; align-items: flex-start; gap: 6px; margin: 12px 0 0; padding: 9px; border-radius: 9px; color: #667085; background: #f5f7f8; font-size: 7.8px; line-height: 1.5; }
+.vehicle-capability-note svg { flex: 0 0 auto; }
+.vehicle-spec-list { margin: 0; }
+.vehicle-spec-list > div { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 0; border-bottom: 1px solid #eef1f3; }
+.vehicle-spec-list > div:last-child { border: 0; }
+.vehicle-spec-list dt { display: flex; align-items: center; gap: 7px; color: #667085; font-size: 9px; }
+.vehicle-spec-list dd { overflow: hidden; margin: 0; max-width: 58%; color: #1d2939; font-size: 9px; font-weight: 800; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.vehicle-data-explainer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 16px; padding: 15px 18px; border: 1px solid #bce3d2; border-radius: 14px; background: #f0fbf6; }
+.vehicle-data-explainer > div { display: flex; align-items: flex-start; gap: 10px; }
+.vehicle-data-explainer svg { flex: 0 0 auto; color: #08784f; }
+.vehicle-data-explainer p { margin: 0; color: #47665a; font-size: 9px; line-height: 1.6; }
+.vehicle-data-explainer p strong { color: #075a3c; }
+.vehicle-data-explainer button { flex: 0 0 auto; padding: 8px 11px; border: 1px solid #8ecbb1; border-radius: 9px; color: #08784f; background: #fff; font: inherit; font-size: 9px; font-weight: 850; cursor: pointer; }
+.vehicle-detail-bottom-actions { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-top: 16px; }
+.vehicle-detail-bottom-actions button { display: flex; align-items: center; gap: 11px; padding: 15px; border: 1px solid #e0e7e3; border-radius: 14px; color: #08784f; background: #fff; font: inherit; cursor: pointer; text-align: left; }
+.vehicle-detail-bottom-actions button:hover { border-color: #8bc7ae; box-shadow: 0 8px 20px rgba(8,120,79,.08); transform: translateY(-1px); }
+.vehicle-detail-bottom-actions button > svg { flex: 0 0 auto; }
+.vehicle-detail-bottom-actions span { display: flex; min-width: 0; flex-direction: column; }
+.vehicle-detail-bottom-actions strong { font-size: 10px; }
+.vehicle-detail-bottom-actions small { margin-top: 2px; color: #98a2b3; font-size: 8px; }
+.vehicle-detail-loading,.vehicle-detail-missing { display: flex; min-height: 420px; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: #667085; text-align: center; }
+.vehicle-detail-missing h1 { margin: 4px 0 0; color: #101828; }
+.vehicle-detail-missing p { margin: 0 0 10px; font-size: 10px; }
+.vehicle-detail-modal-backdrop { position: fixed; z-index: 250; inset: 0; display: grid; overflow-y: auto; place-items: center; padding: 24px; background: rgba(15,23,42,.58); backdrop-filter: blur(5px); }
+.vehicle-detail-modal { width: min(680px,100%); overflow: hidden; border-radius: 20px; background: #fff; box-shadow: 0 28px 85px rgba(16,24,40,.3); }
+.vehicle-detail-modal > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 22px 24px; border-bottom: 1px solid #e9edf0; }
+.vehicle-detail-modal > header span { color: #078a59; font-size: 8px; font-weight: 900; letter-spacing: .12em; }
+.vehicle-detail-modal > header h2 { margin: 4px 0 3px; font-size: 19px; }
+.vehicle-detail-modal > header p { margin: 0; color: #667085; font-size: 9px; }
+.vehicle-detail-modal > header button { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid #e2e7e5; border-radius: 9px; color: #667085; background: #fff; cursor: pointer; }
+.vehicle-detail-modal form > .vehicle-detail-message { margin: 16px 24px 0; }
+.vehicle-telemetry-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; padding: 22px 24px; }
+.vehicle-telemetry-fields label { display: grid; gap: 7px; color: #344054; font-size: 9px; font-weight: 800; }
+.vehicle-telemetry-fields label.wide { grid-column: 1 / -1; }
+.vehicle-telemetry-fields input,.vehicle-telemetry-fields select { width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid #d7dfdc; border-radius: 9px; outline: none; color: #101828; background: #fff; font: inherit; font-size: 10px; }
+.vehicle-telemetry-fields input:focus,.vehicle-telemetry-fields select:focus { border-color: #078a59; box-shadow: 0 0 0 3px rgba(7,138,89,.1); }
+.vehicle-detail-modal footer { display: flex; justify-content: flex-end; gap: 9px; padding: 16px 24px; border-top: 1px solid #e9edf0; background: #fafbfb; }
+.vehicle-bluetooth-modal { width: min(620px,100%); }
+.vehicle-bluetooth-consent { padding: 22px 24px; }
+.vehicle-bluetooth-hero { display: flex; align-items: flex-start; gap: 13px; padding: 16px; border: 1px solid #b9e2d1; border-radius: 14px; background: linear-gradient(135deg,#f1fbf6,#eaf8f2); }
+.vehicle-bluetooth-hero > span { display: grid; width: 43px; height: 43px; flex: 0 0 auto; place-items: center; border-radius: 12px; color: #fff; background: linear-gradient(145deg,#0f9f6e,#08784f); box-shadow: 0 8px 18px rgba(8,120,79,.2); }
+.vehicle-bluetooth-hero strong { display: block; margin: 2px 0 5px; font-size: 13px; }
+.vehicle-bluetooth-hero p { margin: 0; color: #567066; font-size: 9px; line-height: 1.55; }
+.vehicle-bluetooth-consent ul { display: grid; gap: 8px; margin: 17px 0; padding: 0; list-style: none; }
+.vehicle-bluetooth-consent li { display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; border: 1px solid #e8edeb; border-radius: 11px; color: #667085; background: #fff; font-size: 9px; line-height: 1.45; }
+.vehicle-bluetooth-consent li > svg { flex: 0 0 auto; margin-top: 1px; color: #078a59; }
+.vehicle-bluetooth-consent li span { display: grid; gap: 2px; }
+.vehicle-bluetooth-consent li strong { color: #1d2939; font-size: 9.5px; }
+.vehicle-bluetooth-warning { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 11px 12px; border: 1px solid #f1d4ab; border-radius: 11px; color: #8a4b0f; background: #fff9ef; font-size: 8.5px; line-height: 1.5; }
+.vehicle-bluetooth-warning svg { flex: 0 0 auto; }
+@keyframes vehicle-live-pulse { 0%,100% { opacity: .55; transform: scale(.92); } 50% { opacity: 1; transform: scale(1.08); } }
+@media (max-width: 1000px) { .vehicle-detail-metrics { grid-template-columns: repeat(2,1fr); } .vehicle-detail-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .vehicle-detail-header { align-items: flex-start; flex-direction: column; } .vehicle-detail-header-actions { width: 100%; justify-content: space-between; } .vehicle-detail-metrics { grid-template-columns: 1fr; } .vehicle-live-card { align-items: flex-start; flex-direction: column-reverse; padding: 24px; } .vehicle-battery-ring { width: 128px; height: 128px; } .vehicle-battery-ring > div { width: 98px; height: 98px; } .vehicle-data-explainer { align-items: flex-start; flex-direction: column; } .vehicle-detail-bottom-actions { grid-template-columns: 1fr; } .vehicle-telemetry-fields { grid-template-columns: 1fr; } .vehicle-telemetry-fields label.wide { grid-column: auto; } }
+@media (max-width: 430px) { .vehicle-detail-title-icon { display: none; } .vehicle-detail-title-wrap h1 { white-space: normal; } .vehicle-detail-header-actions { align-items: stretch; flex-direction: column; } .vehicle-detail-status { justify-content: center; } .vehicle-detail-modal-backdrop { padding: 10px; } .vehicle-detail-modal > header,.vehicle-telemetry-fields,.vehicle-bluetooth-consent { padding-left: 17px; padding-right: 17px; } .vehicle-bluetooth-hero { flex-direction: column; } .vehicle-detail-modal footer { align-items: stretch; flex-direction: column-reverse; } }

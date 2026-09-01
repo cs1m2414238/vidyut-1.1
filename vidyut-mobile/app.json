@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Vidyut",
+    "slug": "vidyut-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "vidyut",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vidyut.mobile",
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "Allow Vidyut to connect to your EV or charger for live battery status and session control."
+      }
+    },
+    "android": {
+      "package": "com.vidyut.evapp",
+      "adaptiveIcon": {
+        "backgroundColor": "#00A86B",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundImage": "./assets/android-icon-background.png"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Vidyut to access your location to show nearby chargers."
+        }
+      ],
+      "expo-web-browser",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Vidyut to select an institution ID photo for outlet verification.",
+          "cameraPermission": "Allow Vidyut to photograph an institution ID for outlet verification.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#0F8F5D",
+          "defaultChannel": "vidyut-alerts",
+          "enableBackgroundRemoteNotifications": true
+        }
+      ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": false,
+          "neverForLocation": false,
+          "modes": ["central"],
+          "bluetoothAlwaysPermission": "Allow Vidyut to connect to your EV or charger for live battery status and session control."
+        }
+      ]
+    ],
+    "experiments": {}
+  }
+}

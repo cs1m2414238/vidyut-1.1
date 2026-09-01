@@ -1,0 +1,199 @@
+/* Vidyut Splash Screen CSS */
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  background-color: #020f12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 300ms ease-out;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Background image container with slow zoom */
+.splash-bg-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  animation: splashBgFadeIn 0.6s ease 0.2s forwards, slowZoom 2.2s ease forwards;
+}
+
+.splash-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.65) contrast(1.1);
+}
+
+/* Dark subtle overlay on background */
+.splash-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(2, 15, 18, 0.4) 0%,
+    rgba(2, 15, 18, 0.85) 100%
+  );
+}
+
+/* Centered Content Container */
+.splash-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  max-width: 600px;
+}
+
+/* V Logo with soft green glow */
+.splash-logo-container {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+  margin-bottom: 12px;
+}
+
+.splash-logo-svg {
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 0 25px rgba(34, 197, 94, 0.9));
+}
+
+/* VIDYUT Title */
+.splash-title {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+  font-size: 3.8rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(34, 197, 94, 0.4);
+  line-height: 1.1;
+}
+
+/* Tagline: Powering a Smarter Tomorrow */
+.splash-tagline {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4ade80;
+  letter-spacing: 0.05em;
+  margin: 12px 0 24px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+}
+
+/* Small charging line wrapper */
+.splash-line-wrapper {
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 200px;
+  animation: lineFadeIn 0.4s ease 1.5s forwards;
+}
+
+.splash-bolt {
+  font-size: 1.2rem;
+  color: #22c55e;
+  text-shadow: 0 0 10px #22c55e;
+  animation: boltPulse 1s ease-in-out infinite alternate;
+}
+
+.splash-line-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.splash-line-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #15803d, #22c55e, #86efac);
+  box-shadow: 0 0 12px #22c55e;
+  border-radius: 4px;
+  animation: charge 1s ease 1.5s forwards;
+}
+
+/* Keyframes */
+@keyframes splashBgFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slowZoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lineFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes charge {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes boltPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:vidyut_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 1025
+    username: test@vidyut.local
+    password: test
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 3600000
+
+vidyut:
+  payments:
+    demo-enabled: true

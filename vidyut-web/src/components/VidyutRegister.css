@@ -1,0 +1,451 @@
+/* Margdarshi Register Page CSS */
+
+.margdarshi-register-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+  padding: 30px 20px;
+}
+
+/* Dual Split Background: Left Dark Blue, Right Slate Light Gray */
+.split-bg-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(140deg, #0d3e64 0%, #164f7b 50%, #1e5a88 100%);
+  z-index: 1;
+}
+
+.split-bg-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(140deg, #c7d5e0 0%, #d8e3eb 50%, #e8eff4 100%);
+  z-index: 1;
+}
+
+/* Main Container Card */
+.margdarshi-card {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  max-width: 980px;
+  min-height: 650px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Left Column: Sign Up Form */
+.form-column {
+  padding: 42px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.form-header {
+  margin-bottom: 20px;
+}
+
+.signup-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: #0f8f5d;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.signup-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f2743;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.signup-subtitle {
+  max-width: 430px;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Role selector tabs */
+.role-selector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.role-btn {
+  display: flex;
+  min-width: 0;
+  min-height: 104px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #dde6ee;
+  border-radius: 14px;
+  background: #fbfcfd;
+  color: #64748b;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.role-btn:hover { border-color: #9fd2bd; background: #f5fbf8; transform: translateY(-1px); }
+
+.role-btn > span:last-child { min-width: 0; }
+.role-btn strong, .role-btn small { display: block; }
+.role-btn strong { color: #24364b; font-size: .78rem; }
+.role-btn small { margin-top: 3px; color: #7b8a9b; font-size: .64rem; line-height: 1.35; }
+.role-btn-icon { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 9px; color: #64748b; background: #eef3f7; }
+
+.role-btn.active {
+  border-color: #159368;
+  background: linear-gradient(145deg, #f1fbf6, #f8fdfb);
+  color: #08784f;
+  box-shadow: 0 8px 20px rgba(15, 143, 93, 0.12);
+}
+
+.role-btn.active strong { color: #08784f; }
+.role-btn.active .role-btn-icon { color: #fff; background: linear-gradient(145deg, #14a672, #08784f); }
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.input-field-group {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+
+.input-field-group > span { color: #344054; font-size: .72rem; font-weight: 750; }
+
+.input-field-group input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #d8e1e8;
+  border-radius: 11px;
+  font-size: 0.84rem;
+  color: #1e293b;
+  background: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-field-group input::placeholder {
+  color: #94a3b8;
+  font-size: 0.84rem;
+}
+
+.input-field-group input:focus {
+  border-color: #159368;
+  box-shadow: 0 0 0 3px rgba(15, 143, 93, 0.11);
+}
+
+.submit-signup-btn {
+  width: 100%;
+  height: 48px;
+  margin-top: 4px;
+  background: linear-gradient(135deg, #0f9f6e, #08784f);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 9px 20px rgba(8, 120, 79, 0.23);
+}
+
+.submit-signup-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0b8c61, #066b46);
+  transform: translateY(-1px);
+}
+
+.submit-signup-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.signup-error-msg {
+  color: #ef4444;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.already-account {
+  font-size: 0.78rem;
+  color: #475569;
+  margin-top: 3px;
+  margin-bottom: 0;
+}
+
+.login-link-btn {
+  color: #08784f;
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 2px;
+}
+
+.login-link-btn:hover {
+  text-decoration: underline;
+}
+
+/* Right Column: Branding & Social Logins */
+.brand-column {
+  padding: 38px 38px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(92, 220, 156, .18), transparent 25%),
+    linear-gradient(150deg, #0b2f36 0%, #0b3b38 46%, #092d2e 100%);
+  border-left: 1px solid #e2e8f0;
+  height: 100%;
+}
+
+.top-brand-title {
+  width: 100%;
+  text-align: right;
+}
+
+.brand-badge-pill {
+  font-size: 1.35rem;
+  font-weight: 850;
+  color: #d9f99d;
+  letter-spacing: 0.05em;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Vidyut Logo & Feature Section */
+.brand-logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.vidyut-logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.vidyut-logo-wrapper .brand-logo-img {
+  width: 90px;
+  height: 90px;
+  filter: drop-shadow(0 8px 20px rgba(34, 197, 94, 0.35));
+  transition: transform 0.3s ease;
+}
+
+.vidyut-logo-wrapper:hover .brand-logo-img {
+  transform: scale(1.06);
+}
+
+.vidyut-logo-sub {
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #d8e8e3;
+  letter-spacing: 0.02em;
+}
+
+.brand-feature-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  max-width: 280px;
+}
+
+.feature-pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  font-size: 0.73rem;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(22, 197, 94, 0.08);
+}
+
+/* Brand Social Section */
+.brand-social-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Divider line */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 12px 0 8px 0;
+  color: #94a3b8;
+  gap: 12px;
+  width: 100%;
+}
+
+.divider hr {
+  flex: 1;
+  border: none;
+  border-top: 1px solid #e2e8f0;
+}
+
+.divider span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+/* Social Connect Row */
+.socialconnect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.google-signin-btn {
+  width: 100%;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #ccd7df;
+  color: #1e293b;
+  font-size: 0.94rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.08);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.google-signin-btn:hover:not(:disabled) {
+  border-color: #71b99b;
+  background-color: #f3fbf7;
+  color: #08784f;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(8, 120, 79, 0.18);
+}
+
+.google-signin-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.google-signin-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.google-btn-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .split-bg-left, .split-bg-right {
+    width: 100%;
+    height: 50%;
+  }
+  .split-bg-right {
+    top: 50%;
+  }
+
+  .margdarshi-card {
+    grid-template-columns: 1fr;
+    max-width: 450px;
+  }
+
+  .brand-column {
+    border-left: none;
+    border-top: 1px solid #f1f5f9;
+    padding: 30px 24px;
+  }
+
+  .form-column {
+    padding: 30px 24px;
+  }
+
+  .top-brand-title {
+    text-align: center;
+  }
+}
+
+.registration-principles {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+  margin: 8px auto 0;
+}
+
+.registration-principles p {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #dcebe4;
+  border-radius: 12px;
+  color: #c5d8d2;
+  background: rgba(255, 255, 255, .055);
+  border-color: rgba(210, 245, 229, .14);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.registration-principles strong {
+  display: block;
+  color: #d9f99d;
+  font-size: 0.82rem;
+  margin-bottom: 2px;
+}
+
+.registration-principles svg { flex: 0 0 auto; margin-top: 2px; color: #8ee2b9; }
+.brand-logo-section > h2 { margin: 20px 0 7px; color: #fff; font-size: 1.45rem; letter-spacing: -.03em; }
+.brand-logo-section > p { max-width: 390px; margin: 0; color: #b8cec7; font-size: .82rem; line-height: 1.65; }
+.registration-footnote { margin: 0; color: #87a39b; font-size: .66rem; line-height: 1.5; text-align: center; }
