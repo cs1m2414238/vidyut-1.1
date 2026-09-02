@@ -61,6 +61,8 @@ import { MapContainer, TileLayer, Marker as LeafletMarker, Popup as LeafletPopup
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './AutopilotView.css';
+import { AgentWorkQueue } from './AgentWorkQueue';
+import { AgentActivityTimeline } from './AgentActivityTimeline';
 import { AutopilotRecoveryPanel } from './AutopilotRecoveryPanel';
 
 interface AutopilotViewProps {
@@ -395,7 +397,7 @@ function AutopilotJourneyMap({
                           Recovery for {stop.replacesStationName || 'the unavailable planned stop'}
                         </div>
                         <div style={{ fontSize: 11, color: '#334155', marginTop: 3 }}>
-                          {stop.additionalMinutes == null ? 'See recovery summary' : `${stop.additionalMinutes > 0 ? '+' : ''}${stop.additionalMinutes} min impact`} · Arrive {stop.arrivalBatteryPercent}% → Leave {stop.targetBatteryPercent}%
+                          {stop.additionalMinutes == null ? 'See recovery summary' : `${stop.additionalMinutes > 0 ? '+' : ''}${stop.additionalMinutes} min impact`} · Arrive {formatMetric(stop.arrivalBatteryPercent)}% → Leave {formatMetric(stop.targetBatteryPercent)}%
                         </div>
                         {stop.estimatedCost != null && <div style={{ fontSize: 11, fontWeight: 700, color: '#00A86B', marginTop: 3 }}>₹{stop.estimatedCost.toFixed(0)}</div>}
                       </>
@@ -408,7 +410,7 @@ function AutopilotJourneyMap({
                         </div>
                         {stop.arrivalBatteryPercent != null && stop.targetBatteryPercent != null && (
                           <div style={{ fontSize: 11, color: '#334155', marginTop: 2 }}>
-                            Charge: {stop.arrivalBatteryPercent}% → {stop.targetBatteryPercent}%
+                            Charge: {formatMetric(stop.arrivalBatteryPercent)}% → {formatMetric(stop.targetBatteryPercent)}%
                           </div>
                         )}
                         {stop.powerKw && <div style={{ fontSize: 11, color: '#64748B' }}>Power: {stop.powerKw} kW</div>}
@@ -970,6 +972,9 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
         </div>
       </section>
 
+      <AgentWorkQueue refreshKey={trip?.updatedAt ?? endingNotice} />
+      <AgentActivityTimeline refreshKey={trip?.updatedAt ?? endingNotice} />
+
       <div className="autopilot-layout">
         <div className="autopilot-main-column">
           {error && <div className="autopilot-error" role="alert"><AlertTriangle size={18} /> {error}</div>}
@@ -1275,7 +1280,7 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
                   <TripMetric icon={<Route />} value={`${(trip.recovery?.state === 'EXECUTED' ? trip.recovery.newRemainingDistanceKm ?? trip.totalDistanceKm : trip.totalDistanceKm).toFixed(1)} km`} label={trip.recovery?.state === 'EXECUTED' ? 'Remaining road distance' : 'Road distance'} />
                   <TripMetric icon={<Clock3 />} value={formatMinutes(trip.recovery?.state === 'EXECUTED' ? trip.recovery.newRemainingMinutes ?? trip.totalDurationMinutes : trip.totalDurationMinutes)} label={trip.recovery?.state === 'EXECUTED' ? 'Remaining journey at reroute' : 'Door-to-door'} />
                   <TripMetric icon={<IndianRupee />} value={`₹${trip.estimatedChargingCost.toFixed(0)}`} label={`of ₹${trip.maximumChargingBudget.toFixed(0)}`} />
-                  <TripMetric icon={<Gauge />} value={`${trip.estimatedArrivalBatteryPercent}%`} label="Arrival battery" />
+                  <TripMetric icon={<Gauge />} value={`${formatMetric(trip.estimatedArrivalBatteryPercent)}%`} label="Arrival battery" />
                 </div>
                 <div className="active-plan-breakdown">
                   {trip.recovery?.state === 'EXECUTED' ? <span>Recovery remaining route: {trip.recovery.newRemainingDistanceKm?.toFixed(1)} km / {trip.recovery.newRemainingMinutes}m</span> : <>
@@ -1287,7 +1292,7 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
                 </div>
                 <div className="journey-line-scroll-wrap">
                   <div className="journey-line">
-                    <div className="journey-endpoint"><span className="journey-dot start" /><strong>{trip.origin}</strong><small>{trip.telemetry.batteryPercent}% now</small></div>
+                    <div className="journey-endpoint"><span className="journey-dot start" /><strong>{trip.origin}</strong><small>{formatMetric(trip.telemetry.batteryPercent)}% now</small></div>
                     {trip.stops.map((stop, stopIdx) => {
                       const isFaulted = stop.removalReason === 'CHARGER_FAULT' || (trip.recovery?.state !== 'EXECUTED' && stop.connectorId != null && stop.connectorId === trip.recovery?.failedConnectorId);
                       const isReplacement = stop.selectionType === 'REROUTED_REPLACEMENT'
@@ -1322,7 +1327,7 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
                             <span className={`timeline-badge ${isFaulted ? 'badge-failed' : isReplacement ? 'badge-replacement' : isNextReserved ? 'badge-next' : ''}`}>
                               {isFaulted ? '❌ FAILED' : isReplacement ? '🔄 REPLACEMENT' : isNextReserved ? '⚡ NEXT STOP' : stop.status}
                             </span>
-                            <small>{stop.arrivalBatteryPercent}% → {stop.targetBatteryPercent}%</small>
+                            <small>{formatMetric(stop.arrivalBatteryPercent)}% → {formatMetric(stop.targetBatteryPercent)}%</small>
                           </div>
                           {isFaulted && (
                             <div className="journey-reroute-indicator">
@@ -1332,7 +1337,7 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
                         </React.Fragment>
                       );
                     })}
-                    <div className="journey-endpoint destination"><span className="journey-dot end" /><strong>{trip.destination}</strong><small>{trip.estimatedArrivalBatteryPercent}% reserve</small></div>
+                    <div className="journey-endpoint destination"><span className="journey-dot end" /><strong>{trip.destination}</strong><small>{formatMetric(trip.estimatedArrivalBatteryPercent)}% reserve</small></div>
                   </div>
                 </div>
               </section>
@@ -1433,10 +1438,10 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
                             </div>
                             <div className="battery-transfer">
                               <small>ARRIVE</small>
-                              <strong>{stop.arrivalBatteryPercent}%</strong>
+                              <strong>{formatMetric(stop.arrivalBatteryPercent)}%</strong>
                               <ArrowRight size={15} />
                               <small>LEAVE</small>
-                              <strong>{stop.targetBatteryPercent}%</strong>
+                              <strong>{formatMetric(stop.targetBatteryPercent)}%</strong>
                             </div>
                           </div>
                         </article>
@@ -1460,7 +1465,7 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
                             </div>
                             <p><MapPin size={13} /> {stop.stationAddress}</p>
                             <div className="stop-specs">
-                              <span><Zap size={13} /> {stop.connectorType} · {stop.powerKw} kW rated{stop.effectivePowerKw > 0 ? ` · ~${stop.effectivePowerKw} kW effective` : ''}</span>
+                              <span><Zap size={13} /> {stop.connectorType} · {formatMetric(stop.powerKw)} kW rated{stop.effectivePowerKw > 0 ? ` · ~${formatMetric(stop.effectivePowerKw)} kW effective` : ''}</span>
                               <span><Clock3 size={13} /> {stop.estimatedWaitMinutes + stop.chargingMinutes} min impact</span>
                               <span><IndianRupee size={13} /> ₹{stop.estimatedCost.toFixed(0)}</span>
                             </div>
@@ -1468,10 +1473,10 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
                           </div>
                           <div className="battery-transfer">
                             <small>ARRIVE</small>
-                            <strong>{stop.arrivalBatteryPercent}%</strong>
+                            <strong>{formatMetric(stop.arrivalBatteryPercent)}%</strong>
                             <ArrowRight size={15} />
                             <small>LEAVE</small>
-                            <strong>{stop.targetBatteryPercent}%</strong>
+                            <strong>{formatMetric(stop.targetBatteryPercent)}%</strong>
                           </div>
                         </div>
                       </article>
@@ -1489,7 +1494,7 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
               <section className="telemetry-card">
                 <div className="telemetry-head"><div><span>{trip.telemetry.positionSource === 'DEMO_ROUTE_PROGRESS' ? 'DEMO VEHICLE' : 'VEHICLE SNAPSHOT'}</span><h2>{trip.telemetry.vehicleName}</h2><p>{trip.telemetry.registrationNumber} · {trip.telemetry.connectorType}</p></div><span className="live-pill"><i /> {trip.telemetry.positionSource === 'DEMO_ROUTE_PROGRESS' ? 'DEMO' : trip.telemetry.positionSource ?? 'NO GPS'}</span></div>
                 <div className="battery-dial" style={{ '--battery': `${trip.telemetry.batteryPercent * 3.6}deg` } as React.CSSProperties}>
-                  <div><BatteryCharging size={24} /><strong>{trip.telemetry.batteryPercent}%</strong><span>{trip.telemetry.remainingRangeKm} km range</span></div>
+                  <div><BatteryCharging size={24} /><strong>{formatMetric(trip.telemetry.batteryPercent)}%</strong><span>{formatMetric(trip.telemetry.remainingRangeKm)} km range</span></div>
                 </div>
                 <div className="telemetry-stats"><span><small>STATE</small><strong>{trip.telemetry.state.replaceAll('_', ' ')}</strong></span><span><small>WALLET</small><strong>₹{trip.walletBalance.toFixed(0)}</strong></span></div>
                 {trip.paymentMessage && <div className={`payment-note ${trip.status === 'PAYMENT_REQUIRED' ? 'warning' : ''}`}><WalletCards size={16} /><span>{trip.paymentMessage}</span></div>}
@@ -1744,7 +1749,7 @@ function VehicleRecommendationPanel({
             <span><strong>{recommended.chargingStops}</strong><small>charging stops</small></span>
             <span><strong>{formatMinutes(recommended.journeyMinutes)}</strong><small>door-to-door</small></span>
             <span><strong>₹{recommended.estimatedCost.toFixed(0)}</strong><small>charging</small></span>
-            <span><strong>{recommended.arrivalBatteryPercent}%</strong><small>arrival battery</small></span>
+            <span><strong>{formatMetric(recommended.arrivalBatteryPercent)}%</strong><small>arrival battery</small></span>
           </div>
         </article>
       ) : (
@@ -1834,7 +1839,7 @@ function AutopilotProposal({
       <div className="proposal-route-band">
         <div><small>START</small><strong>{plan.origin}</strong><span>{plan.currentBatteryPercent}% battery</span></div>
         <div className="proposal-route-line"><i /><Route size={18} /><i /></div>
-        <div className="destination"><small>ARRIVE</small><strong>{plan.destination}</strong><span>~{plan.estimatedArrivalTime} · {plan.estimatedArrivalBatteryPercent}%</span></div>
+        <div className="destination"><small>ARRIVE</small><strong>{plan.destination}</strong><span>~{plan.estimatedArrivalTime} · {formatMetric(plan.estimatedArrivalBatteryPercent)}%</span></div>
       </div>
 
       <div className="proposal-metrics">
@@ -1847,7 +1852,7 @@ function AutopilotProposal({
             ? `₹${Math.max(0, plan.budgetRemaining).toFixed(0)} budget left`
             : `₹${Math.abs(plan.budgetRemaining).toFixed(0)} over budget`}
         />
-        <TripMetric icon={<ShieldCheck />} value={`${plan.estimatedArrivalBatteryPercent}%`} label={`${plan.minimumArrivalBatteryPercent}% minimum`} />
+        <TripMetric icon={<ShieldCheck />} value={`${formatMetric(plan.estimatedArrivalBatteryPercent)}%`} label={`${formatMetric(plan.minimumArrivalBatteryPercent)}% minimum`} />
       </div>
 
       <div className="proposal-audit-grid">
@@ -1880,7 +1885,7 @@ function AutopilotProposal({
             <div><dt>Maximum DC input</dt><dd>{plan.vehicleMaxChargingPowerKw} kW</dd></div>
             <div><dt>Battery-side efficiency</dt><dd>{plan.chargingEfficiencyPercent}%</dd></div>
             <div><dt>Start / reserve</dt><dd>{plan.currentBatteryPercent}% / {plan.minimumArrivalBatteryPercent}%</dd></div>
-            <div className="total"><dt>Expected arrival</dt><dd>{plan.estimatedArrivalBatteryPercent}%</dd></div>
+            <div className="total"><dt>Expected arrival</dt><dd>{formatMetric(plan.estimatedArrivalBatteryPercent)}%</dd></div>
           </dl>
         </article>
       </div>
@@ -1955,7 +1960,7 @@ function AutopilotProposal({
               </div>
               <div className="proposal-stop-details">
                 <span><Clock3 size={12} /> ETA {stop.estimatedArrivalTime}</span>
-                <span><Zap size={12} /> {stop.connectorType} · {stop.powerKw} kW rated · ~{stop.effectivePowerKw} kW to battery</span>
+                <span><Zap size={12} /> {stop.connectorType} · {formatMetric(stop.powerKw)} kW rated · ~{formatMetric(stop.effectivePowerKw)} kW to battery</span>
                 <span><Wifi size={12} /> {stop.availableConnectors} live</span>
                 <span><IndianRupee size={12} /> ₹{stop.estimatedCost.toFixed(0)}</span>
               </div>
@@ -1964,7 +1969,7 @@ function AutopilotProposal({
             <div className="proposal-charge-block">
               <small>{stop.estimatedWaitMinutes}m wait + {stop.chargingMinutes}m charge + {stop.connectionMinutes}m setup</small>
               <small>{stop.routeOffsetKm} km from base route</small>
-              <div><strong>{stop.arrivalBatteryPercent}%</strong><ArrowRight size={14} /><strong>{stop.targetBatteryPercent}%</strong></div>
+              <div><strong>{formatMetric(stop.arrivalBatteryPercent)}%</strong><ArrowRight size={14} /><strong>{formatMetric(stop.targetBatteryPercent)}%</strong></div>
             </div>
           </article>
         ))}
@@ -2022,6 +2027,11 @@ function toolLabel(name: string): string {
 
 function ActionButton({ icon, label, detail, busy, danger, onClick }: { icon: React.ReactNode; label: string; detail: string; busy: boolean; danger?: boolean; onClick: () => void }) {
   return <button className={`action-control ${danger ? 'danger' : ''}`} onClick={onClick} disabled={busy}><span>{busy ? <LoaderCircle className="spin" size={17} /> : icon}</span><div><strong>{label}</strong><small>{detail}</small></div><ArrowRight size={15} /></button>;
+}
+
+function formatMetric(value: number | null | undefined, digits = 1): string {
+  if (value == null || !Number.isFinite(value)) return '—';
+  return Number(value.toFixed(digits)).toString();
 }
 
 function formatMinutes(minutes: number): string {

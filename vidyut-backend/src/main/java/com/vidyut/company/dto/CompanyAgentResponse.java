@@ -97,11 +97,30 @@ public record CompanyAgentResponse(
             Long stationId,
             Double proposedPricePerKwh,
             String reason,
-            com.vidyut.station.entity.ChargerStatus expectedStatus
+            com.vidyut.station.entity.ChargerStatus expectedStatus,
+            Double expectedPricePerKwh,
+            Long workItemId,
+            String idempotencyKey,
+            String correlationId
     ) {
         public RecommendedAction(CompanyAgentActionType action, String label, String risk, boolean requiresApproval,
                 Long chargerId, Long stationId, Double proposedPricePerKwh, String reason) {
-            this(action, label, risk, requiresApproval, chargerId, stationId, proposedPricePerKwh, reason, null);
+            this(action, label, risk, requiresApproval, chargerId, stationId, proposedPricePerKwh, reason,
+                    null, null, null, null, null);
+        }
+
+        public RecommendedAction(CompanyAgentActionType action, String label, String risk, boolean requiresApproval,
+                Long chargerId, Long stationId, Double proposedPricePerKwh, String reason,
+                com.vidyut.station.entity.ChargerStatus expectedStatus) {
+            this(action, label, risk, requiresApproval, chargerId, stationId, proposedPricePerKwh, reason,
+                    expectedStatus, null, null, null, null);
+        }
+
+        public RecommendedAction(CompanyAgentActionType action, String label, String risk, boolean requiresApproval,
+                Long chargerId, Long stationId, Double proposedPricePerKwh, String reason,
+                com.vidyut.station.entity.ChargerStatus expectedStatus, Double expectedPricePerKwh) {
+            this(action, label, risk, requiresApproval, chargerId, stationId, proposedPricePerKwh, reason,
+                    expectedStatus, expectedPricePerKwh, null, null, null);
         }
     }
 }

@@ -16,39 +16,39 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "agent_domain_events")
+@Table(name = "agent_activities")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AgentDomainEvent {
+public class AgentActivity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 180)
-    private String eventKey;
+    @Column(nullable = false)
+    private Long accountId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private AgentEventType eventType;
+    @Column(nullable = false, length = 20)
+    private AgentWorkspace workspace;
 
-    @Column(nullable = false, length = 50)
-    private String aggregateType;
-
-    @Column(nullable = false)
-    private Long aggregateId;
-
-    private Long actorAccountId;
+    private Long workItemId;
 
     @Column(nullable = false, length = 100)
     private String correlationId;
 
-    @Column(unique = true)
-    private Long outboxEventId;
+    @Column(nullable = false, length = 60)
+    private String activityType;
 
-    @Column(nullable = false, length = 5000)
-    private String payloadJson;
+    @Column(nullable = false, length = 240)
+    private String summary;
+
+    @Column(length = 1500)
+    private String detail;
+
+    @Column(length = 5000)
+    private String metadataJson;
 
     @Builder.Default
     @Column(nullable = false)

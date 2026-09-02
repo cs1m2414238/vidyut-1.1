@@ -20,8 +20,10 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "agent_work_items", uniqueConstraints = @UniqueConstraint(
-        name = "uk_agent_work_item_scope_key", columnNames = {"account_id", "workspace", "work_key"}))
+@Table(name = "agent_work_items", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_agent_work_item_scope_key", columnNames = {"account_id", "workspace", "work_key"}),
+        @UniqueConstraint(name = "uk_agent_work_item_idempotency", columnNames = {"account_id", "workspace", "idempotency_key"})
+})
 @Data
 @Builder
 @NoArgsConstructor
@@ -41,6 +43,21 @@ public class AgentWorkItem {
     @Column(nullable = false, length = 180)
     private String workKey;
 
+    @Column(nullable = false, length = 100)
+    private String idempotencyKey;
+
+    @Column(nullable = false, length = 100)
+    private String correlationId;
+
+    @Column(length = 100)
+    private String objectiveId;
+
+    @Column(length = 100)
+    private String actionBundleId;
+
+    @Column(length = 100)
+    private String requestId;
+
     @Column(nullable = false, length = 60)
     private String category;
 
@@ -58,11 +75,32 @@ public class AgentWorkItem {
     @Column(nullable = false, length = 1500)
     private String detail;
 
+    @Column(length = 1000)
+    private String whatHappened;
+
+    @Column(length = 1000)
+    private String whyItMatters;
+
+    @Column(length = 1000)
+    private String alreadyDone;
+
+    @Column(length = 1000)
+    private String proposedAction;
+
+    @Column(length = 1000)
+    private String approvalReason;
+
+    @Column(length = 1000)
+    private String expectedImpact;
+
     @Column(length = 80)
     private String actionType;
 
     @Column(length = 5000)
     private String actionPayloadJson;
+
+    @Column(length = 5000)
+    private String expectedStateJson;
 
     @Column(length = 50)
     private String resourceType;
@@ -74,6 +112,20 @@ public class AgentWorkItem {
     @Column(length = 1500)
     private String resultSummary;
 
+    @Column(length = 5000)
+    private String executionResultJson;
+
+    @Column(length = 1500)
+    private String failureReason;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private int retryCount = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private int maxRetries = 3;
+
     @Builder.Default
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -84,6 +136,16 @@ public class AgentWorkItem {
 
     private LocalDateTime completedAt;
 
+    private LocalDateTime preparedAt;
+
+    private LocalDateTime approvedAt;
+
+    private LocalDateTime executionStartedAt;
+
+    private LocalDateTime executedAt;
+
+    private LocalDateTime expiresAt;
+
     @Version
     @Builder.Default
     @Column(nullable = false)
@@ -93,7 +155,9 @@ public class AgentWorkItem {
     @PreUpdate
     void touch() {
         updatedAt = LocalDateTime.now();
-        if (status == AgentWorkStatus.DONE || status == AgentWorkStatus.FAILED) {
+        if (status == AgentWorkStatus.DONE || status == AgentWorkStatus.COMPLETED
+                || status == AgentWorkStatus.FAILED || status == AgentWorkStatus.STALE
+                || status == AgentWorkStatus.CANCELLED) {
             if (completedAt == null) completedAt = updatedAt;
         } else {
             completedAt = null;

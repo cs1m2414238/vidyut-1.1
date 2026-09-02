@@ -12,10 +12,22 @@ public record CompanyAgentActionRequest(
         MaintenancePriority priority,
         @Size(max = 500) String reason,
         boolean approved,
-        com.vidyut.station.entity.ChargerStatus expectedStatus
+        com.vidyut.station.entity.ChargerStatus expectedStatus,
+        Double expectedPricePerKwh,
+        Long workItemId,
+        @Size(max = 100) String idempotencyKey,
+        @Size(max = 100) String correlationId
 ) {
     public CompanyAgentActionRequest(CompanyAgentActionType action, Long chargerId, Long stationId,
             Double proposedPricePerKwh, MaintenancePriority priority, String reason, boolean approved) {
-        this(action, chargerId, stationId, proposedPricePerKwh, priority, reason, approved, null);
+        this(action, chargerId, stationId, proposedPricePerKwh, priority, reason, approved,
+                null, null, null, null, null);
+    }
+
+    public CompanyAgentActionRequest(CompanyAgentActionType action, Long chargerId, Long stationId,
+            Double proposedPricePerKwh, MaintenancePriority priority, String reason, boolean approved,
+            com.vidyut.station.entity.ChargerStatus expectedStatus) {
+        this(action, chargerId, stationId, proposedPricePerKwh, priority, reason, approved,
+                expectedStatus, null, null, null, null);
     }
 }

@@ -226,7 +226,7 @@ flowchart TD
 | **Core Engine / Stack** | Python ADK + Gemini 3.6 Flash/OpenRouter + Spring tools | Python ADK + Gemini 3.6 Flash/OpenRouter + Spring tools | Spring network analytics + Python ADK Gemini 3.6 Flash/OpenRouter explanation |
 | **Input Modality** | Natural-Language Prompt + Structured UI Controls | Natural-Language Queries (list, rank, compare, inspect) | Hardware Telemetry, Tamper Alarms, Disputes |
 | **Key Scoped Tools** | `preview_autopilot_trip`, `book_charger`, `reroute`, `complete_charging` (19 tools total) | `get_host_properties`, `check_property_duplicate`, `prepare_property_listing`, `create_property_draft`, `update_property`, `submit_property_for_verification`, `publish_property`, `get_property_readiness`, `compare_company_offers`, `get_hosted_charger_health`, `get_host_operations_context` | `get_company_operations_context` (read-only Spring context) |
-| **Autonomy Enforcement** | `Recommend` \| `Ask Before Action` \| `Full Autopilot` | `Ask Before Actions` — all mutations require explicit approval; backend enforces ownership & deletion protection | Company policy + separate ownership/approval-checked action endpoint |
+| **Autonomy Enforcement** | `Recommend` \| `Ask Before Action` \| `Full Autopilot` | `Ask Before Actions` — all mutations require explicit approval; backend enforces ownership & deletion protection | `Recommend Only` \| `Ask Before Actions` \| bounded `Autopilot`; only enabled charger-isolation and maintenance-ticket tools may auto-run, while every other write remains approval-gated |
 | **Fault Resilience** | Autonomous in-flight rerouting upon socket failure | Gemini → OpenRouter → deterministic Host answer from Spring | Gemini → OpenRouter → deterministic Company answer |
 
 ---

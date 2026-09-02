@@ -12,6 +12,9 @@ import com.vidyut.admin.entity.IncidentSeverity;
 import com.vidyut.admin.service.AdminControlService;
 import com.vidyut.admin.service.OperationalControlService;
 import com.vidyut.agent.service.RoleScopedAgentService;
+import com.vidyut.agent.entity.AgentWorkspace;
+import com.vidyut.agent.entity.AgentWorkItem;
+import com.vidyut.agent.service.AgentWorkQueueService;
 import com.vidyut.booking.entity.*;
 import com.vidyut.booking.repository.BookingRepository;
 import com.vidyut.booking.service.WaitlistService;
@@ -77,6 +80,7 @@ public class HostOperationsService {
     private final AdminControlService adminControlService;
     private final OperationalControlService operationalControlService;
     private final RoleScopedAgentService roleScopedAgentService;
+    private final AgentWorkQueueService agentWorkQueueService;
     private final com.vidyut.company.repository.CompanyRepository companyRepository;
     private final com.vidyut.company.repository.CompanyMaintenanceTicketRepository maintenanceTicketRepository;
     private final LandListingRepository landListingRepository;
@@ -609,6 +613,7 @@ public class HostOperationsService {
         return assistant(accountId, rawQuestion, null);
     }
 
+    @Transactional
     public Map<String, Object> assistant(Long accountId, String rawQuestion, String authorization) {
         Map<String, Object> dashboard = dashboard(accountId);
         Map<String, Object> earnings = earnings(accountId);
@@ -635,10 +640,12 @@ public class HostOperationsService {
                     "label", "Request service from " + (op.contains("Tata") ? "Tata" : "operator"),
                     "requiresConfirmation", true,
                     "connectorId", highestRisk.get("connectorId"), "stationId", highestRisk.get("stationId"),
+                    "expectedStatus", highestRisk.get("status"),
                     "detail", "Send an urgent service notification and work order request to " + op + "."));
             actions.add(linkedMap("action", "PUT_CONNECTOR_IN_MAINTENANCE",
                     "label", "Isolate connector", "requiresConfirmation", true,
                     "connectorId", highestRisk.get("connectorId"), "stationId", highestRisk.get("stationId"),
+                    "expectedStatus", highestRisk.get("status"),
                     "detail", "Impact-check active journeys, then isolate this connector."));
         }
         if (busiest != null) {
@@ -794,6 +801,15 @@ public class HostOperationsService {
                 "proposedActions", actions,
                 "generatedAt", LocalDateTime.now(), "dataPolicy",
                 "Financial figures are calculated from stored bookings or explicitly labeled demo assumptions; legal, subsidy, and contract actions are never automatic.");
+        List<AgentWorkItem> preparedWork = agentWorkQueueService.captureHostPlan(accountId, actions);
+        int preparedIndex = 0;
+        for (Map<String, Object> action : actions) {
+            if (!Boolean.TRUE.equals(action.get("requiresConfirmation"))) continue;
+            AgentWorkItem work = preparedWork.get(preparedIndex++);
+            action.put("workItemId", work.getId());
+            action.put("idempotencyKey", work.getIdempotencyKey());
+            action.put("correlationId", work.getCorrelationId());
+        }
         if (authorization != null && !authorization.isBlank() && roleScopedAgentService != null) {
             RoleScopedAgentService.GroundedReply grounded = roleScopedAgentService.explain(
                     authorization, "HOST", accountId, rawQuestion, answer, result);
@@ -816,7 +832,45 @@ public class HostOperationsService {
             throw new BadRequestException("Host approval is required before Vidyut executes this action");
         }
         String action = request.getAction().trim().toUpperCase(Locale.ROOT);
-        return switch (action) {
+        Long resourceId = request.getConnectorId() != null ? request.getConnectorId()
+                : request.getStationId() != null ? request.getStationId() : request.getPropertyId();
+        String resourceType = request.getConnectorId() != null ? "CONNECTOR"
+                : request.getStationId() != null ? "STATION"
+                : request.getPropertyId() != null ? "PROPERTY" : "HOST";
+        AgentWorkQueueService.ExecutionLease lease = agentWorkQueueService.beginExecution(accountId,
+                AgentWorkspace.HOST, request.getWorkItemId(), request.getIdempotencyKey(), action,
+                resourceType, resourceId, true);
+        if (lease.duplicate()) {
+            Map<String, Object> duplicate = new LinkedHashMap<>(lease.previousResult());
+            duplicate.put("status", "ALREADY_COMPLETED");
+            duplicate.putIfAbsent("message", Objects.toString(lease.item().getResultSummary(), "This action already completed."));
+            return duplicate;
+        }
+        if (lease.stale()) {
+            return linkedMap("status", "APPROVAL_STALE", "workItemId", lease.item().getId(),
+                    "message", Objects.toString(lease.item().getFailureReason(),
+                            "The prepared action is stale. Ask Vidyut to regenerate it."));
+        }
+        if (request.getConnectorId() != null && request.getExpectedStatus() != null) {
+            ChargingConnector current = ownedConnector(accountId, request.getConnectorId());
+            if (!current.getStatus().name().equals(request.getExpectedStatus())) {
+                String reason = "Connector state changed from " + request.getExpectedStatus() + " to "
+                        + current.getStatus() + ". Ask Vidyut to regenerate the action.";
+                agentWorkQueueService.markStale(lease.item(), reason);
+                return linkedMap("status", "APPROVAL_STALE", "workItemId", lease.item().getId(),
+                        "currentStatus", current.getStatus(), "message", reason);
+            }
+        }
+        if (request.getPropertyId() != null && request.getExpectedPropertyStatus() != null) {
+            LandListing current = ownedProperty(accountId, request.getPropertyId());
+            if (!current.getStatus().name().equals(request.getExpectedPropertyStatus())) {
+                String reason = "Property state changed after preparation. Ask Vidyut to regenerate the action.";
+                agentWorkQueueService.markStale(lease.item(), reason);
+                return linkedMap("status", "APPROVAL_STALE", "workItemId", lease.item().getId(),
+                        "currentStatus", current.getStatus(), "message", reason);
+            }
+        }
+        Map<String, Object> result = switch (action) {
             case "REQUEST_TATA_SERVICE", "REQUEST_SERVICE" -> {
                 if (request.getConnectorId() == null) throw new BadRequestException("Choose a connector first");
                 ChargingConnector connector = ownedConnector(accountId, request.getConnectorId());
@@ -975,6 +1029,13 @@ public class HostOperationsService {
             }
             default -> throw new BadRequestException("This Host Agent action is not executable");
         };
+        String resultMessage = Objects.toString(result.get("message"), "Approved Host action completed.");
+        if ("VALIDATION_REQUIRED".equals(Objects.toString(result.get("status"), ""))) {
+            agentWorkQueueService.block(lease.item(), resultMessage);
+            return result;
+        }
+        agentWorkQueueService.completeExecution(lease.item(), resultMessage, result);
+        return result;
     }
 
     public Map<String, Object> evaluatePropertyReadiness(Long accountId) {

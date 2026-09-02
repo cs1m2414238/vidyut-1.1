@@ -9,6 +9,10 @@ import com.vidyut.admin.service.AdminControlService;
 import com.vidyut.admin.service.OperationalControlService;
 import com.vidyut.autopilot.service.AutopilotService;
 import com.vidyut.agent.service.RoleScopedAgentService;
+import com.vidyut.agent.entity.AgentWorkspace;
+import com.vidyut.agent.entity.AgentWorkItem;
+import com.vidyut.agent.service.AgentDomainEventService;
+import com.vidyut.agent.service.AgentWorkQueueService;
 import com.vidyut.common.exception.DuplicateResourceException;
 import com.vidyut.common.exception.BadRequestException;
 import com.vidyut.common.exception.ForbiddenException;
@@ -78,6 +82,8 @@ public class CompanyOperationsService {
     private final AdminControlService adminControlService;
     private final OperationalControlService operationalControlService;
     private final RoleScopedAgentService roleScopedAgentService;
+    private final AgentDomainEventService agentDomainEventService;
+    private final AgentWorkQueueService agentWorkQueueService;
 
     public List<StationResponse> getStations(Long accountId) {
         return getStations(accountId, null);
@@ -473,6 +479,7 @@ public class CompanyOperationsService {
         return askAssistant(accountId, rawQuestion, null);
     }
 
+    @Transactional
     public CompanyAgentResponse askAssistant(Long accountId, String rawQuestion, String authorization) {
         Company company = requireCompany(accountId);
         List<ChargingStation> stations = managedStations(company, accountId);
@@ -484,23 +491,52 @@ public class CompanyOperationsService {
         CompanyAgentResponse.RevenueSummary revenue = agentRevenueSummary(stations, bookings);
         CompanyAgentResponse.PricingRecommendation pricing = agentPricingRecommendation(company, stations);
         List<CompanyAgentResponse.SiteRecommendation> sites = expansionSites(question);
-        Map<String, Object> operations = operatorContextService.inspect(accountId, question, stations, bookings);
+        Map<String, Object> operations = new LinkedHashMap<>(operatorContextService.inspect(accountId, question, stations, bookings));
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> priorities = (List<Map<String, Object>>) operations.getOrDefault("maintenancePriorities", List.of());
         Long priorityStationId = priorities.isEmpty() ? null : ((Number) priorities.get(0).get("stationId")).longValue();
         List<ChargingConnector> priorityChargers = priorityStationId == null ? List.of() : chargers.stream()
                 .filter(c -> priorityStationId.equals(c.getStation().getId())).toList();
         CompanyAgentResponse.FaultImpact fault = agentFaultImpact(stations, priorityChargers, bookings);
-        List<CompanyAgentResponse.RecommendedAction> actions = "DEMO_OPERATION".equals(intent)
-                ? demoActions(question, chargers) : agentActions(intent, company, fault, pricing);
+        ChargerStatus expectedFaultStatus = fault == null ? null : chargers.stream()
+                .filter(charger -> fault.chargerId().equals(charger.getId()))
+                .map(ChargingConnector::getStatus).findFirst().orElse(null);
+        List<CompanyAgentResponse.RecommendedAction> actions = new ArrayList<>("DEMO_OPERATION".equals(intent)
+                ? demoActions(question, chargers) : agentActions(intent, company, fault, pricing, expectedFaultStatus));
+        List<AgentWorkItem> preparedWork = agentWorkQueueService.captureCompanyPlan(accountId, actions);
+        for (int index = 0; index < actions.size(); index++) {
+            CompanyAgentResponse.RecommendedAction action = actions.get(index);
+            AgentWorkItem work = preparedWork.get(index);
+            actions.set(index, new CompanyAgentResponse.RecommendedAction(action.action(), action.label(), action.risk(),
+                    action.requiresApproval(), action.chargerId(), action.stationId(), action.proposedPricePerKwh(),
+                    action.reason(), action.expectedStatus(), action.expectedPricePerKwh(), work.getId(),
+                    work.getIdempotencyKey(), work.getCorrelationId()));
+        }
+        List<Map<String, Object>> automaticActions = new ArrayList<>();
+        for (CompanyAgentResponse.RecommendedAction action : actions.stream()
+                .filter(candidate -> !candidate.requiresApproval()).toList()) {
+            CompanyAgentActionResponse execution = executeAgentAction(accountId, new CompanyAgentActionRequest(
+                    action.action(), action.chargerId(), action.stationId(), action.proposedPricePerKwh(),
+                    com.vidyut.company.entity.MaintenancePriority.HIGH, action.reason(), false,
+                    action.expectedStatus(), action.expectedPricePerKwh(), action.workItemId(),
+                    action.idempotencyKey(), action.correlationId()));
+            automaticActions.add(linkedMap("action", action.action(), "state", execution.state(),
+                    "message", execution.message(), "executedAt", execution.executedAt()));
+        }
+        if (!automaticActions.isEmpty()) operations.put("automaticActions", automaticActions);
+        actions = actions.stream().filter(CompanyAgentResponse.RecommendedAction::requiresApproval).toList();
         Map<String, Object> offerDraft = "OFFER".equals(intent) && (question.contains("prepare") || question.contains("draft")) ? agentOfferDraft(rawQuestion, sites) : Map.of();
         String answer = operatorAnswer(intent, question, assistantAnswer(intent, network, fault, revenue, pricing, sites, offerDraft), operations, actions);
+        if (!automaticActions.isEmpty()) {
+            answer += "\n\nBounded Autopilot completed " + automaticActions.size()
+                    + " enabled low-risk action(s). The verified outcomes are in the work queue.";
+        }
         Map<String, Object> context = linkedMap("companyName", company.getCompanyName(), "mode", company.getAgentMode(),
                 "intent", intent, "network", network, "operations", operations, "fault", fault, "revenue", revenue,
                 "pricing", pricing, "siteRecommendations", sites, "proposedActions", actions, "offerDraft", offerDraft,
                 "ownershipBreakdown", linkedMap("companyOwnedStations", stations.stream().filter(st -> st.getOwnershipType() == StationOwnershipType.COMPANY_OWNED).count(),
                         "hostPartneredStations", stations.stream().filter(st -> st.getOwnershipType() == StationOwnershipType.HOST_PARTNERED).count()),
-                "approvalPolicy", "Every write requires explicit approval, even in AUTOPILOT mode. Company operates hardware; Host reports issues; driver approves reroutes.");
+                "approvalPolicy", "Recommend Only never mutates. Ask Before Actions waits for approval. AUTOPILOT may isolate faulty connectors and create maintenance tickets only when the saved per-tool permission allows it; other writes still require approval.");
         RoleScopedAgentService.GroundedReply grounded = authorization != null && !authorization.isBlank() && roleScopedAgentService != null
                 ? roleScopedAgentService.explain(authorization, "COMPANY", accountId, rawQuestion, answer, context)
                 : new RoleScopedAgentService.GroundedReply(answer, "deterministic-company-fallback", "DETERMINISTIC", true);
@@ -516,9 +552,45 @@ public class CompanyOperationsService {
                     "Recommend-only mode never changes the network. Switch mode or perform the action manually.",
                     request.action(), Map.of(), null);
         }
-        if (!request.approved()) {
+        if (!request.approved() && !autoAuthorized(company, request.action())) {
             return new CompanyAgentActionResponse("AWAITING_APPROVAL",
                     "This action is prepared but needs company approval.", request.action(), Map.of(), null);
+        }
+
+        Long resourceId = request.chargerId() != null ? request.chargerId() : request.stationId();
+        String resourceType = request.chargerId() != null ? "CONNECTOR"
+                : request.stationId() != null ? "STATION" : "COMPANY";
+        AgentWorkQueueService.ExecutionLease lease = agentWorkQueueService.beginExecution(accountId,
+                AgentWorkspace.COMPANY, request.workItemId(), request.idempotencyKey(), request.action().name(),
+                resourceType, resourceId, request.approved());
+        if (lease.duplicate()) {
+            return new CompanyAgentActionResponse("ALREADY_COMPLETED",
+                    Objects.toString(lease.item().getResultSummary(), "This action already completed."),
+                    request.action(), lease.previousResult(), lease.item().getExecutedAt());
+        }
+        if (lease.stale()) {
+            return new CompanyAgentActionResponse("APPROVAL_STALE",
+                    Objects.toString(lease.item().getFailureReason(), "The prepared action is stale. Ask Vidyut to regenerate it."),
+                    request.action(), Map.of("workItemId", lease.item().getId()), null);
+        }
+        if (request.chargerId() != null && request.expectedStatus() != null) {
+            ChargingConnector current = managedCharger(company, accountId, request.chargerId());
+            if (current.getStatus() != request.expectedStatus()) {
+                String staleReason = "Connector state changed from " + request.expectedStatus() + " to "
+                        + current.getStatus() + ". Ask Vidyut to regenerate the action.";
+                agentWorkQueueService.markStale(lease.item(), staleReason);
+                return new CompanyAgentActionResponse("APPROVAL_STALE", staleReason, request.action(),
+                        Map.of("workItemId", lease.item().getId(), "currentStatus", current.getStatus()), null);
+            }
+        }
+        if (request.stationId() != null && request.expectedPricePerKwh() != null) {
+            ChargingStation current = ownedStation(accountId, request.stationId());
+            if (Math.abs(current.getPricePerKwh() - request.expectedPricePerKwh()) > 0.001) {
+                String staleReason = "Station price changed after preparation. Ask Vidyut to calculate a fresh recommendation.";
+                agentWorkQueueService.markStale(lease.item(), staleReason);
+                return new CompanyAgentActionResponse("APPROVAL_STALE", staleReason, request.action(),
+                        Map.of("workItemId", lease.item().getId(), "currentPricePerKwh", current.getPricePerKwh()), null);
+            }
         }
 
         Map<String, Object> result;
@@ -593,6 +665,7 @@ public class CompanyOperationsService {
             }
             default -> throw new BadRequestException("Unsupported Company Assistant action");
         }
+        agentWorkQueueService.completeExecution(lease.item(), message, result);
         return new CompanyAgentActionResponse("EXECUTED", message, request.action(), result, LocalDateTime.now());
     }
 
@@ -754,26 +827,38 @@ public class CompanyOperationsService {
     }
 
     private List<CompanyAgentResponse.RecommendedAction> agentActions(String intent, Company company,
-            CompanyAgentResponse.FaultImpact fault, CompanyAgentResponse.PricingRecommendation pricing) {
+            CompanyAgentResponse.FaultImpact fault, CompanyAgentResponse.PricingRecommendation pricing,
+            ChargerStatus expectedFaultStatus) {
         List<CompanyAgentResponse.RecommendedAction> actions = new ArrayList<>();
-        boolean approval = true;
+        boolean autopilot = company.getAgentMode() == CompanyAgentMode.AUTOPILOT;
         if (("FAULT".equals(intent) || "OVERVIEW".equals(intent)) && fault != null) {
             actions.add(new CompanyAgentResponse.RecommendedAction(CompanyAgentActionType.DISABLE_NEW_BOOKINGS,
-                    "Disable new bookings", "LOW", approval || !company.isAgentAutoDisableFaultyChargers(),
-                    fault.chargerId(), null, null, fault.issue()));
+                    "Disable new bookings", "LOW", !autopilot || !company.isAgentAutoDisableFaultyChargers(),
+                    fault.chargerId(), null, null, fault.issue(), expectedFaultStatus));
             actions.add(new CompanyAgentResponse.RecommendedAction(CompanyAgentActionType.CREATE_MAINTENANCE_TICKET,
-                    "Create maintenance ticket", "LOW", approval || !company.isAgentAutoCreateMaintenanceTickets(),
-                    fault.chargerId(), null, null, fault.issue()));
+                    "Create maintenance ticket", "LOW", !autopilot || !company.isAgentAutoCreateMaintenanceTickets(),
+                    fault.chargerId(), null, null, fault.issue(), expectedFaultStatus));
             actions.add(new CompanyAgentResponse.RecommendedAction(CompanyAgentActionType.NOTIFY_STATION_MANAGER,
-                    "Notify station manager", "LOW", approval, fault.chargerId(), null, null, fault.issue()));
+                    "Notify station manager", "LOW", true, fault.chargerId(), null, null, fault.issue(),
+                    expectedFaultStatus));
         }
         if ("PRICING".equals(intent) && pricing != null
                 && Math.abs(pricing.recommendedPricePerKwh() - pricing.currentPricePerKwh()) > 0.009) {
             actions.add(new CompanyAgentResponse.RecommendedAction(CompanyAgentActionType.APPLY_PRICE_RECOMMENDATION,
-                    "Apply reviewed station price", "MEDIUM", approval, null, pricing.stationId(),
-                    pricing.recommendedPricePerKwh(), "Price change within company limits; persists until changed manually"));
+                    "Apply reviewed station price", "MEDIUM", true, null, pricing.stationId(),
+                    pricing.recommendedPricePerKwh(), "Price change within company limits; persists until changed manually",
+                    null, pricing.currentPricePerKwh()));
         }
         return actions;
+    }
+
+    private boolean autoAuthorized(Company company, CompanyAgentActionType action) {
+        if (company.getAgentMode() != CompanyAgentMode.AUTOPILOT) return false;
+        return switch (action) {
+            case DISABLE_NEW_BOOKINGS -> company.isAgentAutoDisableFaultyChargers();
+            case CREATE_MAINTENANCE_TICKET -> company.isAgentAutoCreateMaintenanceTickets();
+            default -> false;
+        };
     }
 
     private String assistantAnswer(String intent, CompanyAgentResponse.NetworkSummary network,
@@ -859,6 +944,7 @@ public class CompanyOperationsService {
                     charger.getStatusSource() + ": " + reason, 0, impact);
         }
         if (demo && target == ChargerStatus.ONLINE) adminControlService.resolveOperatorDemoIncident(station, charger);
+        if (target == ChargerStatus.ONLINE) agentDomainEventService.connectorRestored(station, charger, accountId);
         recordActivity(company, accountId, charger.getStatusSource(), "CHARGER", charger.getId(),
                 charger.getChargerCode() + " -> " + target + ": " + reason);
         return linkedMap("chargerId", charger.getId(), "chargerCode", charger.getChargerCode(), "status", target,

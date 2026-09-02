@@ -3,12 +3,17 @@ package com.vidyut.company.service;
 import com.vidyut.admin.service.AdminControlService;
 import com.vidyut.admin.service.OperationalControlService;
 import com.vidyut.autopilot.service.AutopilotService;
+import com.vidyut.agent.service.AgentDomainEventService;
+import com.vidyut.agent.service.AgentWorkQueueService;
+import com.vidyut.agent.entity.AgentWorkItem;
+import com.vidyut.agent.entity.AgentWorkStatus;
 import com.vidyut.booking.entity.Booking;
 import com.vidyut.booking.entity.BookingStatus;
 import com.vidyut.booking.repository.BookingRepository;
 import com.vidyut.company.dto.*;
 import com.vidyut.company.entity.Company;
 import com.vidyut.company.entity.CompanyAgentMode;
+import com.vidyut.company.entity.CompanyMaintenanceTicket;
 import com.vidyut.company.repository.*;
 import com.vidyut.land.repository.LandListingRepository;
 import com.vidyut.payment.repository.PaymentRepository;
@@ -19,6 +24,7 @@ import com.vidyut.station.repository.ChargingConnectorRepository;
 import com.vidyut.station.repository.ChargingStationRepository;
 import com.vidyut.station.service.ChargingStationService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -53,7 +59,32 @@ class CompanyOperationsServiceTest {
     @Mock AutopilotService autopilotService;
     @Mock AdminControlService adminControlService;
     @Mock OperationalControlService operationalControlService;
+    @Mock AgentDomainEventService agentDomainEventService;
+    @Mock AgentWorkQueueService agentWorkQueueService;
     @InjectMocks CompanyOperationsService service;
+
+    @BeforeEach
+    void agentWorkItems() {
+        lenient().when(agentWorkQueueService.captureCompanyPlan(anyLong(), anyList())).thenAnswer(invocation -> {
+            List<CompanyAgentResponse.RecommendedAction> actions = invocation.getArgument(1);
+            List<AgentWorkItem> items = new ArrayList<>();
+            for (int index = 0; index < actions.size(); index++) {
+                items.add(AgentWorkItem.builder().id(100L + index).idempotencyKey("idempotency-" + index)
+                        .correlationId("trace-" + index).status(actions.get(index).requiresApproval()
+                                ? AgentWorkStatus.NEEDS_APPROVAL : AgentWorkStatus.PREPARED).build());
+            }
+            return items;
+        });
+        lenient().when(agentWorkQueueService.beginExecution(anyLong(), any(), any(), any(), anyString(),
+                anyString(), any(), anyBoolean())).thenAnswer(invocation -> {
+            AgentWorkItem item = AgentWorkItem.builder().id(99L).accountId(invocation.getArgument(0))
+                    .workspace(invocation.getArgument(1)).idempotencyKey("test-action")
+                    .correlationId("test-trace").actionType(invocation.getArgument(4))
+                    .resourceType(invocation.getArgument(5)).resourceId(invocation.getArgument(6))
+                    .status(AgentWorkStatus.EXECUTING).build();
+            return new AgentWorkQueueService.ExecutionLease(item, false, false, Map.of());
+        });
+    }
 
     @Test
     void recommendOnlyModeNeverExecutesThePreparedCompanyAction() {
@@ -111,7 +142,7 @@ class CompanyOperationsServiceTest {
     }
 
     @Test
-    void approvedActionIsolatesOnlyTheFaultyChargerWhileKeepingItsHealthyBackupAvailable() {
+    void boundedAutopilotIsolatesOnlyTheFaultyChargerWhileKeepingItsHealthyBackupAvailable() {
         Company company = Company.builder().id(3L).agentMode(CompanyAgentMode.AUTOPILOT)
                 .agentAutoDisableFaultyChargers(true).build();
         ChargingStation station = ChargingStation.builder().id(9L).name("Kanpur Central").address("Kanpur")
@@ -128,7 +159,7 @@ class CompanyOperationsServiceTest {
 
         CompanyAgentActionResponse response = service.executeAgentAction(7L,
                 new CompanyAgentActionRequest(CompanyAgentActionType.DISABLE_NEW_BOOKINGS,
-                        21L, null, null, null, "Cooling fault", true));
+                        21L, null, null, null, "Cooling fault", false));
 
         assertThat(response.state()).isEqualTo("EXECUTED");
         assertThat(faulty.isAvailable()).isFalse();
@@ -139,12 +170,76 @@ class CompanyOperationsServiceTest {
     }
 
     @org.junit.jupiter.params.ParameterizedTest
-    @org.junit.jupiter.params.provider.EnumSource(CompanyAgentActionType.class)
-    void evenAutopilotRequiresApprovalForEveryWrite(CompanyAgentActionType action) {
+    @org.junit.jupiter.params.provider.EnumSource(value = CompanyAgentActionType.class,
+            names = {"DISABLE_NEW_BOOKINGS", "CREATE_MAINTENANCE_TICKET"},
+            mode = org.junit.jupiter.params.provider.EnumSource.Mode.EXCLUDE)
+    void autopilotStillRequiresApprovalForActionsOutsideItsSavedLowRiskTools(CompanyAgentActionType action) {
         Company company = Company.builder().id(3L).agentMode(CompanyAgentMode.AUTOPILOT).build();
         when(verificationService.requireMarketplaceVerified(7L)).thenReturn(company);
         assertThat(service.executeAgentAction(7L, new CompanyAgentActionRequest(action, 21L, 9L, 12.0, null, "Review", false)).state()).isEqualTo("AWAITING_APPROVAL");
         verifyNoInteractions(connectorRepository, stationRepository, maintenanceTicketRepository, autopilotService, activityLogRepository);
+    }
+
+    @Test
+    void boundedAutopilotMayReuseOneActiveMaintenanceTicket() {
+        Company company = Company.builder().id(3L).agentMode(CompanyAgentMode.AUTOPILOT)
+                .agentAutoCreateMaintenanceTickets(true).build();
+        ChargingStation station = ChargingStation.builder().id(9L).name("Kanpur Central")
+                .operatorCompanyId(3L).build();
+        ChargingConnector faulty = ChargingConnector.builder().id(21L).station(station).chargerCode("KNP-03")
+                .type(ConnectorType.CCS2).status(ChargerStatus.FAULT).available(false).build();
+        CompanyMaintenanceTicket existing = CompanyMaintenanceTicket.builder().id(77L).companyId(3L)
+                .chargerId(21L).chargerCode("KNP-03").stationId(9L).stationName("Kanpur Central")
+                .priority(com.vidyut.company.entity.MaintenancePriority.HIGH)
+                .status(com.vidyut.company.entity.MaintenanceTicketStatus.OPEN).issue("Cooling fault").build();
+        when(verificationService.requireMarketplaceVerified(7L)).thenReturn(company);
+        when(connectorRepository.findByIdForUpdate(21L)).thenReturn(Optional.of(faulty));
+        when(maintenanceTicketRepository.findFirstByCompanyIdAndChargerIdAndStatusInOrderByUpdatedAtDesc(
+                eq(3L), eq(21L), any())).thenReturn(Optional.of(existing));
+
+        CompanyAgentActionResponse response = service.executeAgentAction(7L,
+                new CompanyAgentActionRequest(CompanyAgentActionType.CREATE_MAINTENANCE_TICKET,
+                        21L, null, null, null, "Cooling fault", false));
+
+        assertThat(response.state()).isEqualTo("EXECUTED");
+        assertThat(response.result()).containsEntry("ticketId", 77L);
+        verify(maintenanceTicketRepository, never()).save(any());
+    }
+
+    @Test
+    void repeatedIdempotencyKeyReturnsTheVerifiedResultWithoutRunningTheMutationAgain() {
+        Company company = Company.builder().id(3L).agentMode(CompanyAgentMode.AUTOPILOT)
+                .agentAutoCreateMaintenanceTickets(true).build();
+        when(verificationService.requireMarketplaceVerified(7L)).thenReturn(company);
+        AgentWorkItem completed = AgentWorkItem.builder().id(91L).idempotencyKey("same-key")
+                .correlationId("connector-21").status(AgentWorkStatus.COMPLETED)
+                .resultSummary("Maintenance ticket 77 is OPEN").executedAt(LocalDateTime.now()).build();
+        when(agentWorkQueueService.beginExecution(eq(7L), any(), eq(91L), eq("same-key"),
+                eq("CREATE_MAINTENANCE_TICKET"), eq("CONNECTOR"), eq(21L), eq(true)))
+                .thenReturn(new AgentWorkQueueService.ExecutionLease(completed, true, false,
+                        Map.of("ticketId", 77L)));
+
+        CompanyAgentActionResponse response = service.executeAgentAction(7L,
+                new CompanyAgentActionRequest(CompanyAgentActionType.CREATE_MAINTENANCE_TICKET,
+                        21L, null, null, null, "Cooling fault", true, ChargerStatus.FAULT,
+                        null, 91L, "same-key", "connector-21"));
+
+        assertThat(response.state()).isEqualTo("ALREADY_COMPLETED");
+        assertThat(response.result()).containsEntry("ticketId", 77L);
+        verifyNoInteractions(connectorRepository, maintenanceTicketRepository, autopilotService);
+    }
+
+    @Test
+    void autopilotRespectsThePerToolDisableBoundary() {
+        Company company = Company.builder().id(3L).agentMode(CompanyAgentMode.AUTOPILOT)
+                .agentAutoDisableFaultyChargers(false).build();
+        when(verificationService.requireMarketplaceVerified(7L)).thenReturn(company);
+
+        var response = service.executeAgentAction(7L, new CompanyAgentActionRequest(
+                CompanyAgentActionType.DISABLE_NEW_BOOKINGS, 21L, null, null, null, "Review", false));
+
+        assertThat(response.state()).isEqualTo("AWAITING_APPROVAL");
+        verifyNoInteractions(connectorRepository, autopilotService, activityLogRepository);
     }
 
     @Test void approvedDemoFaultPersistsTelemetryAndPropagatesOnlyTheExactConnector() {
@@ -209,9 +304,14 @@ class CompanyOperationsServiceTest {
         var charger = ChargingConnector.builder().id(21L).station(station).chargerCode("DEMO-AGRA-CCS2-01")
                 .type(ConnectorType.CCS2).status(stale ? ChargerStatus.FAULT : ChargerStatus.ONLINE).build();
         when(connectorRepository.findByIdForUpdate(21L)).thenReturn(Optional.of(charger));
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.executeAgentAction(7L,
-                new CompanyAgentActionRequest(CompanyAgentActionType.SIMULATE_DEMO_FAULT, 21L, null, null, null, "Synthetic fault", true, ChargerStatus.ONLINE)))
-                .isInstanceOf(com.vidyut.common.exception.BadRequestException.class);
+        var request = new CompanyAgentActionRequest(CompanyAgentActionType.SIMULATE_DEMO_FAULT,
+                21L, null, null, null, "Synthetic fault", true, ChargerStatus.ONLINE);
+        if (stale) {
+            assertThat(service.executeAgentAction(7L, request).state()).isEqualTo("APPROVAL_STALE");
+        } else {
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.executeAgentAction(7L, request))
+                    .isInstanceOf(com.vidyut.common.exception.BadRequestException.class);
+        }
         verify(connectorRepository, never()).save(any());
         verifyNoInteractions(autopilotService, adminControlService);
     }

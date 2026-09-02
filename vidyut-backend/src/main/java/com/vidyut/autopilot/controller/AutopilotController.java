@@ -38,7 +38,13 @@ public class AutopilotController {
     private final com.vidyut.agent.service.AiAgentGateway agentGateway;
 
     public record RecoveryRequest(@jakarta.validation.constraints.NotBlank String incidentId,
-                                  String planId, String provider) {}
+                                  String planId, String provider, Long workItemId,
+                                  @jakarta.validation.constraints.Size(max = 100) String idempotencyKey,
+                                  @jakarta.validation.constraints.Size(max = 100) String correlationId) {
+        public RecoveryRequest(String incidentId, String planId, String provider) {
+            this(incidentId, planId, provider, null, null, null);
+        }
+    }
 
     @PostMapping("/trips/{tripId}/position")
     public ResponseEntity<?> updatePosition(@PathVariable Long tripId,

@@ -18,7 +18,7 @@ Company operates hardware, including Company-operated Host-partnered stations. T
 - Company-owned and Host-partnered assets remain distinct. Explicit operator ownership takes precedence over legacy supplier attribution.
 - Expansion ranking uses discoverable verified properties, bays, available load and straight-line distance to operating stations. A requested `120 kW CCS2` setup filters out sites that cannot meet that requirement. A survey must establish spare capacity.
 - Connector compatibility, AC-only sites, Company proposal comparisons and recorded gross charging amounts are read-only analyses.
-- Every agent write requires approval, including saved `AUTOPILOT` mode. Canonical demo actions check current status under a database lock and reject stale approvals or active charging sessions.
+- `RECOMMEND_ONLY` never mutates and `ASK_BEFORE_ACTIONS` always waits for approval. In saved `AUTOPILOT` mode, only automatic charger isolation and automatic maintenance-ticket creation can execute without another prompt, and only when their individual safety toggles are enabled. Pricing, notifications, demo controls, restoration, contracts, payouts, and destructive actions remain approval-gated. Canonical demo actions check current status under a database lock and reject stale approvals or active charging sessions.
 - Creating a maintenance ticket does not silently change hardware, assign a fictional technician or invent an arrival time. Assignment and resolution use the Maintenance workspace.
 
 ## Deliberate limits

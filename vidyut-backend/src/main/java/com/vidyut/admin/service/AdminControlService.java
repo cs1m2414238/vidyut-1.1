@@ -7,6 +7,7 @@ import com.vidyut.admin.dto.*;
 import com.vidyut.admin.entity.*;
 import com.vidyut.admin.repository.*;
 import com.vidyut.autopilot.service.AutopilotService;
+import com.vidyut.agent.service.AgentDomainEventService;
 import com.vidyut.booking.entity.Booking;
 import com.vidyut.booking.repository.BookingRepository;
 import com.vidyut.common.exception.BadRequestException;
@@ -63,6 +64,7 @@ public class AdminControlService {
     private final AdminSettlementRepository settlementRepository;
     private final InstallationProposalRepository proposalRepository;
     private final AutopilotService autopilotService;
+    private final AgentDomainEventService agentDomainEventService;
     private final NotificationService notificationService;
     private final OperationalControlService operationalControlService;
 
@@ -201,6 +203,7 @@ public class AdminControlService {
                 .faultCode(connector.getFaultCode()).description(request.reason()).affectedBookings(affected)
                 .usersRerouted(automatic).approvalsRequired(approvals).manualInterventions(manual)
                 .estimatedDowntimeMinutes(request.estimatedDowntimeMinutes()).maintenanceTicketId(ticketId).build());
+        agentDomainEventService.connectorFaulted(station, connector, incident, admin.getAccountId(), reroute);
         notifyIncident(station, incident);
         audit(admin, "CREATE_INCIDENT", "INCIDENT", incident.getId(), previous, "FAULT",
                 request.reason() + " · rerouted=" + automatic + ", approvals=" + approvals + ", manual=" + manual);
@@ -228,7 +231,10 @@ public class AdminControlService {
                                                    int estimatedDowntimeMinutes, Map<String, Object> reroute) {
         Optional<NetworkIncident> existing = incidentRepository
                 .findFirstByConnectorIdAndStatusInOrderByCreatedAtDesc(connector.getId(), ACTIVE_INCIDENTS);
-        if (existing.isPresent()) return existing.get();
+        if (existing.isPresent()) {
+            agentDomainEventService.connectorFaulted(station, connector, existing.get(), null, reroute);
+            return existing.get();
+        }
         IncidentCreateRequest request = new IncidentCreateRequest(connector.getId(), severity, reason, estimatedDowntimeMinutes);
         int automatic = number(reroute.get("automaticReroutes"));
         int approvals = number(reroute.get("driverApprovals"));
@@ -244,6 +250,7 @@ public class AdminControlService {
                 .faultCode(connector.getFaultCode()).description(reason).affectedBookings(affected)
                 .usersRerouted(automatic).approvalsRequired(approvals).manualInterventions(manual)
                 .estimatedDowntimeMinutes(estimatedDowntimeMinutes).maintenanceTicketId(ticketId).build());
+        agentDomainEventService.connectorFaulted(station, connector, incident, null, reroute);
         notifyIncident(station, incident);
         auditRepository.save(AdminAuditLog.builder()
                 .adminAccountId(0L)

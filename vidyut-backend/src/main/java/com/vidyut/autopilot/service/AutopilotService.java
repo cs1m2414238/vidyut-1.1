@@ -1,5 +1,7 @@
 package com.vidyut.autopilot.service;
 
+import com.vidyut.agent.entity.AgentWorkStatus;
+import com.vidyut.agent.service.AgentWorkQueueService;
 import com.vidyut.autopilot.dto.AutopilotActionResponse;
 import com.vidyut.autopilot.dto.AutopilotPlanResponse;
 import com.vidyut.autopilot.dto.AutopilotPlanStopResponse;
@@ -76,6 +78,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -109,6 +112,7 @@ public class AutopilotService {
     private final AutopilotPositionService positions;
     private final RecoveryStore recoveryStore;
     private final com.vidyut.station.repository.ChargingConnectorRepository recoveryConnectors;
+    private final AgentWorkQueueService agentWorkQueueService;
 
     @Value("${vidyut.routing.corridor-time-km:8}")
     private double timeCorridorKm;
@@ -518,6 +522,8 @@ public class AutopilotService {
             prior.setActiveBookingId(null);
             prior.setUpdatedAt(LocalDateTime.now());
             tripRepository.save(prior);
+            agentWorkQueueService.completeJourney(prior,
+                    "Superseded by a newly approved journey; remaining reservations were released.");
             List<AutopilotStop> priorStops = stopRepository.findByTripIdOrderBySequenceNumberAsc(prior.getId());
             for (AutopilotStop s : priorStops) {
                 if (s.getStatus() != AutopilotStopStatus.COMPLETED) {
@@ -609,6 +615,8 @@ public class AutopilotService {
                         + " · estimated charging ₹" + roundMoney(totalCost) + ".");
 
         reserveAllStops(trip, stops, userId);
+        agentWorkQueueService.trackJourney(trip, AgentWorkStatus.IN_PROGRESS,
+                "Route validated, " + stops.size() + " charging stop(s) reserved, and continuous journey monitoring is ready.");
         notificationService.sendNotification(userId, "Vidyut Autopilot is ready",
                 "All " + stops.size() + " timing-matched charging stop(s) are tentatively reserved for "
                         + trip.getDestination() + ".",
@@ -662,6 +670,8 @@ public class AutopilotService {
                         + "% · next reservation protected.");
         addAction(trip, AutopilotActionState.INFO, "Journey monitored",
                 "Vidyut is watching charger status, queue changes, battery safety and budget.");
+        agentWorkQueueService.trackJourney(trip, AgentWorkStatus.IN_PROGRESS,
+                "Navigation is active. Vidyut is monitoring battery, traffic-sensitive progress, charger health, reservations, and budget.");
         return toResponse(trip);
     }
 
@@ -792,6 +802,9 @@ public class AutopilotService {
         }
 
         tripRepository.save(trip);
+        agentWorkQueueService.completeJourney(trip, reached
+                ? "Journey completed at " + trip.getDestination() + "; charging reservations and payments were settled."
+                : "Journey ended early and all future charging reservations were released.");
         return toResponse(trip);
     }
 
@@ -908,6 +921,19 @@ public class AutopilotService {
         addAction(trip, AutopilotActionState.WARNING, "Charger fault detected",
                 failed.getStationName() + " · connector " + failed.getConnectorId()
                         + ". Incident queued for the EV Agent. Existing reservations are unchanged.");
+        Map<String, Object> recoveryWorkPayload = new LinkedHashMap<>();
+        recoveryWorkPayload.put("incidentId", incidentId);
+        recoveryWorkPayload.put("tripId", trip.getId());
+        recoveryWorkPayload.put("failedStopId", failed.getId());
+        recoveryWorkPayload.put("failedStationId", failed.getStationId());
+        recoveryWorkPayload.put("failedConnectorId", failed.getConnectorId());
+        recoveryWorkPayload.put("autonomyMode", normalizedAutonomyMode(trip.getAutonomyMode()));
+        agentWorkQueueService.trackRecovery(trip, incidentId, AgentWorkStatus.PENDING,
+                "A reserved connector failed. The current route is unchanged while Vidyut builds and validates complete safe alternatives.",
+                recoveryWorkPayload);
+        agentWorkQueueService.recordRecoveryActivity(trip, incidentId, "FAULT_DETECTED", "Fault detected",
+                "The reserved connector was excluded before any replacement booking was attempted.",
+                Map.of("connectorId", failed.getConnectorId(), "stationId", failed.getStationId()));
         return toResponse(trip);
     }
 
@@ -948,6 +974,10 @@ public class AutopilotService {
         tripRepository.save(trip);
         addAction(trip, session.getPlans().isEmpty() ? AutopilotActionState.WARNING : AutopilotActionState.INFO,
                 "Vidyut evaluated recovery chargers", session.getEvidence().getReason());
+        agentWorkQueueService.recordRecoveryActivity(trip, incidentId, "ALTERNATIVES_EVALUATED",
+                session.getPlans().size() + " safe alternative(s) found",
+                session.getEvidence().getReason(), Map.of("safeAlternatives", session.getPlans().size(),
+                        "state", session.getEvidence().getState()));
         return Map.of("state", session.getEvidence().getState(), "evidence", session.getEvidence(),
                 "candidates", session.getPlans().stream().map(p -> Map.of("planId", p.id(), "plan", recoveryEvidence(session, p))).toList());
     }
@@ -980,6 +1010,17 @@ public class AutopilotService {
         if (!"FULL_AUTOPILOT".equals(mode)) addAction(trip, AutopilotActionState.INFO,
                 "RECOMMEND_ONLY".equals(mode) ? "Recommendation only" : "Execution permission required",
                 "RECOMMEND_ONLY".equals(mode) ? "The suggestion will not be applied in this autonomy mode." : "Driver approval is required before any reservation or route changes.");
+        AgentWorkStatus workStatus = "RECOMMEND_ONLY".equals(mode) ? AgentWorkStatus.BLOCKED
+                : "FULL_AUTOPILOT".equals(mode) ? AgentWorkStatus.PREPARED : AgentWorkStatus.NEEDS_APPROVAL;
+        agentWorkQueueService.trackRecovery(trip, incidentId, workStatus,
+                "Safe recovery bundle prepared: release superseded bookings, reserve the validated connectors, update navigation, ETA, and charging targets.",
+                Map.of("incidentId", incidentId, "tripId", trip.getId(), "planId", plan.id(),
+                        "autonomyMode", mode, "strategy", plan.strategy(), "estimatedCost", plan.cost(),
+                        "totalMinutes", plan.totalMinutes(), "distanceKm", plan.distanceKm(),
+                        "arrivalReserve", plan.destinationArrivalSoc()));
+        agentWorkQueueService.recordRecoveryActivity(trip, incidentId, "RECOVERY_PREPARED", "Recovery prepared",
+                plan.strategy() + " passed complete-route reserve, budget, connector, and deadline validation.",
+                Map.of("planId", plan.id(), "safeStops", plan.stops().size(), "estimatedCost", plan.cost()));
         return toResponse(trip);
     }
 
@@ -998,19 +1039,33 @@ public class AutopilotService {
             throw new com.vidyut.common.exception.ForbiddenException("This autonomy mode does not permit automatic reroute execution");
         if (!Set.of("PREPARED", "AWAITING_APPROVAL").contains(session.getEvidence().getState()))
             throw new BadRequestException("No prepared recovery route is available");
+        AgentWorkQueueService.ExecutionLease lease = agentWorkQueueService
+                .beginRecoveryExecution(trip, incidentId, driverApproval);
+        if (lease.duplicate()) return toResponse(trip);
+        if (lease.stale()) return staleRecovery(trip, session, lease,
+                Objects.toString(lease.item().getFailureReason(), "The recovery approval expired."));
         RecoveryPlan selected = session.getPlans().stream().filter(p -> p.id().equals(planId)).findFirst().orElseThrow();
         // Lock the exact connectors before checking them and creating bookings.
-        selected.stops().stream().map(AutopilotStop::getConnectorId).distinct().sorted().forEach(id -> {
-            ChargingConnector c = recoveryConnectors.findByIdForUpdate(id).orElseThrow(() -> new BadRequestException("Recovery connector disappeared"));
-            if (!c.isAvailable() || c.isMaintenanceMode() || c.getStatus() != ChargerStatus.ONLINE)
-                throw new BadRequestException("Recovery connector is no longer available; evaluate recovery again");
-        });
+        for (Long id : selected.stops().stream().map(AutopilotStop::getConnectorId).distinct().sorted().toList()) {
+            ChargingConnector connector = recoveryConnectors.findByIdForUpdate(id).orElse(null);
+            if (connector == null || !connector.isAvailable() || connector.isMaintenanceMode()
+                    || connector.getStatus() != ChargerStatus.ONLINE) {
+                return staleRecovery(trip, session, lease,
+                        "Recovery connector " + id + " is no longer available. Vidyut must evaluate a new route.");
+            }
+        }
         List<AutopilotStop> existing = stopRepository.findByTripIdOrderBySequenceNumberAscIdAsc(tripId);
-        RecoveryPlan plan = recoveryPlanner.revalidate(trip, ownedVehicle(trip.getVehicleId(), userId), ownedStop(tripId, session.getFailedStopId()),
-                session.getEvidence(), selected, existing);
+        RecoveryPlan plan;
+        try {
+            plan = recoveryPlanner.revalidate(trip, ownedVehicle(trip.getVehicleId(), userId),
+                    ownedStop(tripId, session.getFailedStopId()), session.getEvidence(), selected, existing);
+        } catch (BadRequestException changed) {
+            return staleRecovery(trip, session, lease, changed.getMessage());
+        }
         // A materially changed quote must be reviewed again, including in autopilot.
         if (Math.abs(plan.cost()-selected.cost()) > 0.01 || Math.abs(plan.distanceKm()-selected.distanceKm()) > 0.1
-                || plan.totalMinutes()!=selected.totalMinutes()) throw new BadRequestException("RECOVERY_STATE_CHANGED: road or charging quote changed; evaluate recovery again");
+                || plan.totalMinutes()!=selected.totalMinutes()) return staleRecovery(trip, session, lease,
+                "Road or charging conditions changed after approval. Vidyut must evaluate recovery again.");
         if (driverApproval) addAction(trip, AutopilotActionState.SUCCESS, "Driver approved reroute", "Approved proposal " + planId + ".");
         for (AutopilotStop old : existing) {
             if (old.getStatus()!=AutopilotStopStatus.RESERVED && old.getStatus()!=AutopilotStopStatus.PLANNED) continue;
@@ -1029,6 +1084,9 @@ public class AutopilotService {
             stop = stopRepository.save(stop);
             arrivalSeconds += plan.route().legs().get(i).duration();
             reserveStop(trip, stop, userId, (int)Math.ceil(arrivalSeconds/60), i==0);
+            agentWorkQueueService.recordRecoveryActivity(trip, incidentId, "CONNECTOR_RESERVED",
+                    "Replacement connector reserved", stop.getStationName() + " · connector " + stop.getConnectorId(),
+                    Map.of("connectorId", stop.getConnectorId(), "bookingId", stop.getBookingId()));
             arrivalSeconds += 60.0*(stop.getChargingMinutes()+stop.getEstimatedWaitMinutes()+stop.getConnectionMinutes());
         }
         positions.setNavigation(trip, plan.route());
@@ -1048,6 +1106,23 @@ public class AutopilotService {
         addAction(trip, AutopilotActionState.SUCCESS, "Navigation updated", driverApproval
                 ? "Approved recovery route applied and all recovery stops reserved."
                 : "Vidyut automatically rerouted your journey within the configured reserve, budget and deadline constraints.");
+        agentWorkQueueService.completeRecovery(trip, incidentId,
+                "Recovery executed and verified: replacement connectors are reserved and navigation follows the validated itinerary.");
+        agentWorkQueueService.trackJourney(trip, AgentWorkStatus.IN_PROGRESS,
+                "Journey monitoring resumed on the verified recovery itinerary.");
+        return toResponse(trip);
+    }
+
+    private AutopilotTripResponse staleRecovery(AutopilotTrip trip, RecoverySession session,
+            AgentWorkQueueService.ExecutionLease lease, String reason) {
+        agentWorkQueueService.markStale(lease.item(), reason);
+        session.getEvidence().setState("APPROVAL_STALE");
+        session.getEvidence().setReason(reason);
+        recoveryStore.write(trip, session);
+        trip.setStatus(AutopilotTripStatus.REROUTE_APPROVAL_REQUIRED);
+        trip.setUpdatedAt(LocalDateTime.now());
+        tripRepository.save(trip);
+        addAction(trip, AutopilotActionState.WARNING, "Recovery approval is stale", reason);
         return toResponse(trip);
     }
 
@@ -1160,6 +1235,7 @@ public class AutopilotService {
             trip.setUpdatedAt(LocalDateTime.now());
             tripRepository.save(trip);
             addAction(trip, AutopilotActionState.WARNING, "AutoPay needs attention", trip.getPaymentMessage());
+            agentWorkQueueService.trackJourney(trip, AgentWorkStatus.ATTENTION, trip.getPaymentMessage());
             remember(trip, activeStop.getStationId(), RouteExperienceOutcome.PAYMENT_ISSUE,
                     trip.getPaymentMessage(), null, null);
             return toResponse(trip);
@@ -1207,6 +1283,8 @@ public class AutopilotService {
         notificationService.sendNotification(userId, "Charging and AutoPay complete",
                 "₹" + roundMoney(activeStop.getEstimatedCost()) + " paid at " + activeStop.getStationName() + ".",
                 NotificationType.CHARGING_COMPLETED);
+        agentWorkQueueService.trackJourney(trip, AgentWorkStatus.IN_PROGRESS,
+                "Charging target reached and AutoPay verified. Monitoring continues toward " + trip.getDestination() + ".");
         return toResponse(trip);
     }
 

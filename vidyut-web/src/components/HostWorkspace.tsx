@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import { apiDownload, apiRequest } from "../services/api";
 import { HostMarketplaceView } from "./HostMarketplaceView";
+import { AgentWorkQueue, type AgentWorkItem } from "./AgentWorkQueue";
+import { AgentActivityTimeline } from "./AgentActivityTimeline";
 
 type ModalKind = "charger" | "availability" | "profile" | "kyc" | "bank" | null;
 type ReviewAction = {
@@ -294,6 +296,11 @@ interface AgentAction {
   propertyId?: number;
   payload?: Record<string, unknown>;
   detail: string;
+  expectedStatus?: string;
+  expectedPropertyStatus?: string;
+  workItemId?: number;
+  idempotencyKey?: string;
+  correlationId?: string;
 }
 interface HostAgentInsight {
   answer: string;
@@ -388,6 +395,7 @@ interface HostAgentInsight {
   liveSessions: Monitor[];
   proposedActions: AgentAction[];
   dataPolicy: string;
+  generatedAt?: string;
 }
 export interface HostCounts {
   bookings: number;
@@ -931,17 +939,20 @@ export function HostWorkspace({
       onNavigate("marketplace");
       return;
     }
-    if (
-      action.action === "PUT_CONNECTOR_IN_MAINTENANCE" &&
-      action.connectorId
-    ) {
-      const item = monitoring.find(
-        (connector) => connector.id === action.connectorId,
-      );
-      if (item) await updateMonitor(item, "MAINTENANCE");
-      return;
-    }
     setPendingAgentAction(action);
+  };
+  const reviewQueuedAgentAction = (item: AgentWorkItem) => {
+    if (!item.actionType) return;
+    void chooseAgentAction({
+      ...(item.actionPayload as Partial<AgentAction>),
+      action: item.actionType,
+      label: item.title,
+      requiresConfirmation: true,
+      detail: item.detail,
+      workItemId: item.id,
+      idempotencyKey: item.idempotencyKey,
+      correlationId: item.correlationId,
+    } as AgentAction);
   };
   const executeAgentAction = async () => {
     if (!pendingAgentAction) return;
@@ -960,6 +971,11 @@ export function HostWorkspace({
             connectorId: pendingAgentAction.connectorId,
             propertyId: pendingAgentAction.propertyId,
             payload: pendingAgentAction.payload,
+            expectedStatus: pendingAgentAction.expectedStatus,
+            expectedPropertyStatus: pendingAgentAction.expectedPropertyStatus,
+            workItemId: pendingAgentAction.workItemId,
+            idempotencyKey: pendingAgentAction.idempotencyKey,
+            correlationId: pendingAgentAction.correlationId,
             approved: true,
           }),
         },
@@ -1122,6 +1138,13 @@ export function HostWorkspace({
     notifications: "Host notifications",
     profile: "Host profile & verification",
   };
+  const urgentIncident = monitoring.find(
+    (item) =>
+      item.status === "FAULT" ||
+      item.status === "MAINTENANCE" ||
+      (item.status as string) === "SUSPECTED_FAULT" ||
+      Boolean(item.faultCode?.includes("SUSPECTED_FAULT")),
+  );
   return (
     <section className="host-workspace">
       <header className="host-page-head">
@@ -1187,8 +1210,7 @@ export function HostWorkspace({
         </div>
       )}
 
-      {/* Real-time Incident Alert for Host Prince */}
-      {monitoring.some((m) => m.status === 'FAULT' || m.status === 'MAINTENANCE' || (m as any).status === 'SUSPECTED_FAULT' || (m.faultCode && m.faultCode.includes('SUSPECTED_FAULT'))) && (
+      {urgentIncident && (
         <section className="host-urgent-incident-banner" role="alert" style={{
           background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.18) 100%)',
           border: '1px solid rgba(239, 68, 68, 0.4)',
@@ -1225,12 +1247,17 @@ export function HostWorkspace({
                   padding: '2px 6px',
                   borderRadius: 4,
                   textTransform: 'uppercase'
-                }}>POTENTIAL CHARGER FAULT</span>
-                <span style={{ fontSize: 11, color: '#fca5a5' }}>1 active trip rerouted</span>
+                }}>HOSTED CHARGER INCIDENT</span>
+                <span style={{ fontSize: 11, color: '#9f2430', fontWeight: 700 }}>
+                  {urgentIncident.status} · Company-managed response
+                </span>
               </div>
-              <strong style={{ color: '#f8fafc', fontSize: 14 }}>Prince Highway Charging Hub (Dausa) — Tata CCS2 #1</strong>
-              <p style={{ margin: '3px 0 0 0', fontSize: 12, color: '#cbd5e1' }}>
-                Driver reported session could not start. Equipment operator <em>Tata Power — Demo Operator Data</em> has been notified.
+              <strong style={{ color: '#621b25', fontSize: 14 }}>
+                {urgentIncident.stationName} — {urgentIncident.chargerCode}
+              </strong>
+              <p style={{ margin: '3px 0 0 0', fontSize: 12, color: '#7c3740' }}>
+                {urgentIncident.faultCode || "Service attention required"}. Equipment operator{" "}
+                <em>{urgentIncident.operatorCompanyName || "the assigned charging Company"}</em> owns the hardware response; the Host can monitor and request service.
               </p>
             </div>
           </div>
@@ -1324,17 +1351,21 @@ export function HostWorkspace({
         />
       )}
       {tab === "ai" && (
-        <HostAiPanel
-          question={question}
-          setQuestion={setQuestion}
-          answer={answer}
-          dashboard={dashboard}
-          monitoring={monitoring}
-          insight={agentInsight}
-          busy={saving}
-          onAsk={ask}
-          onAction={chooseAgentAction}
-        />
+        <>
+          <AgentWorkQueue refreshKey={agentInsight?.generatedAt ?? monitoring.length} onReview={reviewQueuedAgentAction} />
+          <AgentActivityTimeline refreshKey={agentInsight?.generatedAt ?? monitoring.length} />
+          <HostAiPanel
+            question={question}
+            setQuestion={setQuestion}
+            answer={answer}
+            dashboard={dashboard}
+            monitoring={monitoring}
+            insight={agentInsight}
+            busy={saving}
+            onAsk={ask}
+            onAction={chooseAgentAction}
+          />
+        </>
       )}
       {tab === "finance" && (
         <GreenFinancePanel

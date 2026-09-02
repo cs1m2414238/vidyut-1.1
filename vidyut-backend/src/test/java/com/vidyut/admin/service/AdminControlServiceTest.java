@@ -8,6 +8,7 @@ import com.vidyut.admin.dto.PropertyWorkflowRequest;
 import com.vidyut.admin.entity.*;
 import com.vidyut.admin.repository.*;
 import com.vidyut.autopilot.service.AutopilotService;
+import com.vidyut.agent.service.AgentDomainEventService;
 import com.vidyut.booking.repository.BookingRepository;
 import com.vidyut.company.repository.CompanyMaintenanceTicketRepository;
 import com.vidyut.company.repository.CompanyRepository;
@@ -57,6 +58,7 @@ class AdminControlServiceTest {
     @Mock AdminSettlementRepository settlementRepository;
     @Mock InstallationProposalRepository proposalRepository;
     @Mock AutopilotService autopilotService;
+    @Mock AgentDomainEventService agentDomainEventService;
     @Mock NotificationService notificationService;
     @InjectMocks AdminControlService service;
 

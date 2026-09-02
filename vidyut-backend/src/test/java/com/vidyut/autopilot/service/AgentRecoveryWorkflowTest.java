@@ -2,6 +2,9 @@ package com.vidyut.autopilot.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vidyut.autopilot.dto.*;
+import com.vidyut.agent.service.AgentWorkQueueService;
+import com.vidyut.agent.entity.AgentWorkItem;
+import com.vidyut.agent.entity.AgentWorkStatus;
 import com.vidyut.autopilot.entity.*;
 import com.vidyut.autopilot.repository.*;
 import com.vidyut.booking.dto.BookingResponse;
@@ -37,6 +40,7 @@ class AgentRecoveryWorkflowTest {
     @Mock WalletService walletService;
     @Mock SafeRecoveryPlanner recoveryPlanner;
     @Mock AutopilotPositionService positions;
+    @Mock AgentWorkQueueService agentWorkQueueService;
     @Spy RecoveryStore recoveryStore=new RecoveryStore(new ObjectMapper().findAndRegisterModules());
     @InjectMocks AutopilotService service;
     AutopilotTrip trip;
@@ -71,6 +75,11 @@ class AgentRecoveryWorkflowTest {
         when(recoveryPlanner.revalidate(any(),any(),any(),any(),any(),any())).thenAnswer(inv->inv.getArgument(4));
         when(recoveryConnectors.findByIdForUpdate(41L)).thenReturn(Optional.of(ChargingConnector.builder().id(41L).available(true).status(ChargerStatus.ONLINE).build()));
         when(bookingService.createBooking(any(),eq(2L))).thenReturn(BookingResponse.builder().id(50L).build());
+        when(agentWorkQueueService.beginRecoveryExecution(any(), anyString(), anyBoolean()))
+                .thenReturn(new AgentWorkQueueService.ExecutionLease(
+                        AgentWorkItem.builder().id(88L).idempotencyKey("recovery-test")
+                                .correlationId("connector-21").status(AgentWorkStatus.EXECUTING).build(),
+                        false, false, Map.of()));
     }
 
     @Test void askPreparesWithoutCancellingBookingOrApplyingNavigation() {
@@ -118,7 +127,9 @@ class AgentRecoveryWorkflowTest {
     @Test void freshSafetyFailureRejectsApprovalBeforeAnyBookingChange() {
         service.prepareSafeReroute(1L,2L,"incident-1","plan-1","GEMINI");
         when(recoveryPlanner.revalidate(any(),any(),any(),any(),any(),any())).thenThrow(new BadRequestException("NO_SAFE_RECOVERY_ROUTE"));
-        assertThatThrownBy(()->service.approvePreparedReroute(1L,2L,"incident-1","plan-1")).hasMessageContaining("NO_SAFE");
+        var response = service.approvePreparedReroute(1L,2L,"incident-1","plan-1");
+        assertThat(response.getRecovery().getState()).isEqualTo("APPROVAL_STALE");
+        assertThat(response.getRecovery().getReason()).contains("NO_SAFE");
         verifyNoInteractions(bookingService,positions);
         assertThat(failed.getStatus()).isEqualTo(AutopilotStopStatus.RESERVED);
     }

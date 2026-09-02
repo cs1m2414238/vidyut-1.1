@@ -12,4 +12,9 @@ public class HostAgentActionRequest {
     private Long propertyId;
     private java.util.Map<String, Object> payload;
     private boolean approved;
+    private Long workItemId;
+    private String idempotencyKey;
+    private String correlationId;
+    private String expectedStatus;
+    private String expectedPropertyStatus;
 }

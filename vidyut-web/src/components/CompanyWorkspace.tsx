@@ -28,6 +28,8 @@ import {
 import { apiDownload, apiRequest } from '../services/api';
 import { CompanyMarketplaceView } from './CompanyMarketplaceView';
 import { CompanyVerificationFlow } from './CompanyVerificationFlow';
+import { AgentWorkQueue, type AgentWorkItem } from './AgentWorkQueue';
+import { AgentActivityTimeline } from './AgentActivityTimeline';
 
 type ModalKind = 'station' | 'charger' | 'employee' | 'pricing' | 'profile' | 'verification' | null;
 
@@ -188,7 +190,7 @@ interface CompanyAgentResponse {
   revenue: { sessions: number; energySoldKwh: number; chargingRevenue: number; estimatedHostPayouts: number; estimatedVidyutFees: number; refunds: number; estimatedCompanyRevenue: number; bestPerformingStation: string; lowestPerformingStation: string };
   pricing?: { stationId: number; stationName: string; currentPricePerKwh: number; nearbyAveragePricePerKwh: number; recommendedPricePerKwh: number; currentUtilizationPercent: number; expectedUtilizationPercent: number; timeWindow: string };
   siteRecommendations: SiteRecommendation[];
-  actions: Array<{ action: CompanyAgentActionType; label: string; risk: string; requiresApproval: boolean; chargerId?: number; stationId?: number; proposedPricePerKwh?: number; reason: string; expectedStatus?: Charger['status'] }>;
+  actions: Array<{ action: CompanyAgentActionType; label: string; risk: string; requiresApproval: boolean; chargerId?: number; stationId?: number; proposedPricePerKwh?: number; reason: string; expectedStatus?: Charger['status']; expectedPricePerKwh?: number; workItemId?: number; idempotencyKey?: string; correlationId?: string }>;
   offerDraft?: Record<string, string | number>;
   operations?: {
     stations: Array<{ stationId: number; stationName: string; city?: string; ownershipType: string; hostName?: string; propertyTitle?: string; issueCount: number; unavailableConnectors: number; affectedJourneyIds: number[]; activeBookingIds: number[]; downtimeMinutes?: number; availableCcs2: number; ccs2Connectors: number; acOnly: boolean }>;
@@ -586,6 +588,27 @@ export function CompanyWorkspace({ tab, token, companyName, onNavigate, onCounts
     finally { setSaving(false); }
   };
 
+  const reviewQueuedAgentAction = (item: AgentWorkItem) => {
+    if (!item.actionType) return;
+    const payload = item.actionPayload;
+    const numberValue = (value: unknown) => typeof value === 'number' ? value : undefined;
+    setPendingAgentAction({
+      action: item.actionType as CompanyAgentActionType,
+      label: item.title,
+      risk: item.priority,
+      requiresApproval: true,
+      chargerId: numberValue(payload.chargerId),
+      stationId: numberValue(payload.stationId),
+      proposedPricePerKwh: numberValue(payload.proposedPricePerKwh),
+      reason: typeof payload.reason === 'string' ? payload.reason : item.detail,
+      expectedStatus: typeof payload.expectedStatus === 'string' ? payload.expectedStatus as Charger['status'] : undefined,
+      expectedPricePerKwh: numberValue(payload.expectedPricePerKwh),
+      workItemId: item.id,
+      idempotencyKey: item.idempotencyKey,
+      correlationId: item.correlationId,
+    });
+  };
+
   const download = async (type: 'ANALYTICS' | 'REVENUE', format: 'PDF' | 'XLSX') => {
     try {
       const blob = await apiDownload(`/company/reports/export?type=${type}&format=${format}`, token);
@@ -696,7 +719,7 @@ export function CompanyWorkspace({ tab, token, companyName, onNavigate, onCounts
       {tab === 'revenue' && <CompanyRevenuePanel dashboard={dashboard} analytics={analytics} settlement={settlement} onDownload={download} />}
       {tab === 'maintenance' && <CompanyMaintenancePanel network={network} tickets={maintenanceTickets} employees={employees} saving={saving} onCreate={createMaintenanceTicket} onUpdate={updateMaintenanceTicket} />}
       {tab === 'users' && <div className="company-team-grid"><ResourceList title="Company employees" action="Add employee" icon={Users} onAdd={() => openModal('employee')} empty="Invite managers, operators and maintenance staff.">{employees.map((employee) => <ResourceRow key={employee.id} icon={Users} title={employee.name} subtitle={`${employee.email} · ${employee.permissions || 'Default permissions'}`} status={employee.active ? employee.role : 'INACTIVE'} meta={dateTime(employee.createdAt)} onEdit={() => openModal('employee', employee)} onDelete={() => setPendingDelete({ kind: 'employees', id: employee.id, label: employee.name })} />)}</ResourceList><ActivityLogPanel items={activityLogs} /></div>}
-      {tab === 'ai' && <AiPanel companyName={companyName} question={question} setQuestion={setQuestion} answer={assistantAnswer} sites={siteRecommendations} response={agentResponse} settings={agentSettings} loading={assistantLoading} saving={saving} onAsk={askAi} onSettings={updateAgentSettings} onAction={async action => { setPendingAgentAction(action); }} onOpenOpportunities={() => onNavigate('host_opportunities')} dashboard={dashboard} />}
+      {tab === 'ai' && <><AgentWorkQueue refreshKey={agentResponse?.generatedAt ?? networkVersion} onReview={reviewQueuedAgentAction} /><AgentActivityTimeline refreshKey={agentResponse?.generatedAt ?? networkVersion} /><AiPanel companyName={companyName} question={question} setQuestion={setQuestion} answer={assistantAnswer} sites={siteRecommendations} response={agentResponse} settings={agentSettings} loading={assistantLoading} saving={saving} onAsk={askAi} onSettings={updateAgentSettings} onAction={async action => { setPendingAgentAction(action); }} onOpenOpportunities={() => onNavigate('host_opportunities')} dashboard={dashboard} /></>}
       {tab === 'expansion' && <ExpansionIntelligencePanel companyName={companyName} sites={siteRecommendations} answer={assistantAnswer} loading={assistantLoading} onRefresh={analyzeExpansion} onOpenOpportunities={() => onNavigate('host_opportunities')} onAskAssistant={() => { setQuestion('Compare the top expansion sites and explain the investment trade-offs.'); onNavigate('ai'); }} />}
       {tab === 'reports' && <ReportsPanel onDownload={download} />}
       {tab === 'notifications' && <CompanyNotificationsPanel items={notifications} onRead={markNotificationRead} onReadAll={markAllNotificationsRead} />}
@@ -845,14 +868,14 @@ function AiPanel({ companyName, question, setQuestion, answer, sites, response, 
   const modes: Array<{ id: CompanyAgentMode; label: string; detail: string }> = [
     { id: 'RECOMMEND_ONLY', label: 'Recommend only', detail: 'Vidyut recommends; your team acts' },
     { id: 'ASK_BEFORE_ACTIONS', label: 'Ask before actions', detail: 'Vidyut waits for team approval' },
-    { id: 'AUTOPILOT', label: 'Monitor and prepare', detail: 'Every write still requires approval' },
+    { id: 'AUTOPILOT', label: 'Bounded Autopilot', detail: 'Approved low-risk tools act inside saved limits' },
   ];
   return <div className="company-agent-page">
     <section className="company-agent-authority company-card">
       <div><span className="feature-eyebrow">ACTION PERMISSION</span><h2>Choose how Vidyut may act</h2><p>Vidyut always monitors and analyzes your network. You decide whether it may carry out operational actions.</p></div>
       <div className="company-agent-modes">{modes.map((mode) => <button key={mode.id} className={settings.mode === mode.id ? 'active' : ''} disabled={saving} onClick={() => void onSettings({ mode: mode.id })}><span>{mode.label}</span><small>{mode.detail}</small>{settings.mode === mode.id && <CheckCircle2 size={16} />}</button>)}</div>
-      <div className="company-agent-limit-heading"><strong>Operational safety limits</strong><span>Every write requires approval in every mode.</span></div>
-      <div className="company-agent-limits"><label>Maximum approved price change <strong>{settings.maxPriceChangePercent}%</strong><input type="range" min="0" max="25" step="1" value={settings.maxPriceChangePercent} disabled={saving} onChange={event => void onSettings({ maxPriceChangePercent: Number(event.target.value) })} /></label><p>Host partners report issues. Company operators control equipment. EV Owners approve replacement journeys.</p></div>
+      <div className="company-agent-limit-heading"><strong>Operational safety limits</strong><span>Pricing, notifications, contracts, payouts, deletion, and restoration still require approval.</span></div>
+      <div className="company-agent-limits"><label>Maximum approved price change <strong>{settings.maxPriceChangePercent}%</strong><input type="range" min="0" max="25" step="1" value={settings.maxPriceChangePercent} disabled={saving} onChange={event => void onSettings({ maxPriceChangePercent: Number(event.target.value) })} /></label><label className="company-agent-tool-toggle"><input type="checkbox" checked={settings.autoDisableFaultyChargers} disabled={saving} onChange={event => void onSettings({ autoDisableFaultyChargers: event.target.checked })} /><span>Allow fault isolation</span></label><label className="company-agent-tool-toggle"><input type="checkbox" checked={settings.autoCreateMaintenanceTickets} disabled={saving} onChange={event => void onSettings({ autoCreateMaintenanceTickets: event.target.checked })} /><span>Allow maintenance tickets</span></label><p>Host partners report issues. Company operators control equipment. EV Owners approve replacement journeys.</p></div>
     </section>
     <div className="ai-company-layout">
     <article className="company-card ai-company-card">
