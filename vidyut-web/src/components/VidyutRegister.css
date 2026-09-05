@@ -11,7 +11,10 @@
   overflow-y: auto;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   box-sizing: border-box;
-  padding: 30px 20px;
+  padding: 20px;
+  background:
+    linear-gradient(110deg, rgba(4, 24, 22, .92) 0%, rgba(5, 38, 34, .76) 48%, rgba(5, 20, 23, .56) 100%),
+    url("../assets/backgroundnight.png") center / cover no-repeat;
 }
 
 /* Dual Split Background: Left Dark Blue, Right Slate Light Gray */
@@ -23,6 +26,7 @@
   height: 100%;
   background: linear-gradient(140deg, #0d3e64 0%, #164f7b 50%, #1e5a88 100%);
   z-index: 1;
+  display: none;
 }
 
 .split-bg-right {
@@ -33,6 +37,7 @@
   height: 100%;
   background: linear-gradient(140deg, #c7d5e0 0%, #d8e3eb 50%, #e8eff4 100%);
   z-index: 1;
+  display: none;
 }
 
 /* Main Container Card */
@@ -42,30 +47,37 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   width: 100%;
-  max-width: 980px;
+  max-width: 1040px;
   min-height: 650px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: rgba(221, 240, 234, .08);
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, .34);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .5);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   overflow: hidden;
 }
 
 /* Left Column: Sign Up Form */
 .form-column {
-  padding: 42px 44px;
+  padding: 30px 46px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: #ffffff;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .62), rgba(232, 244, 239, .42));
+  border-right: 1px solid rgba(255, 255, 255, .38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .66);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .form-header {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .signup-kicker {
   display: block;
-  margin-bottom: 7px;
+  margin-bottom: 5px;
   color: #0f8f5d;
   font-size: .72rem;
   font-weight: 800;
@@ -74,7 +86,7 @@
 }
 
 .signup-title {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: #0f2743;
   margin: 0 0 4px 0;
@@ -84,7 +96,7 @@
 .signup-subtitle {
   max-width: 430px;
   font-size: 0.86rem;
-  line-height: 1.55;
+  line-height: 1.45;
   color: #64748b;
   margin: 0;
   font-weight: 500;
@@ -95,39 +107,40 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .role-btn {
   display: flex;
+  position: relative;
   min-width: 0;
-  min-height: 104px;
+  min-height: 94px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  padding: 12px;
-  border: 1px solid #dde6ee;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(202, 220, 212, .72);
   border-radius: 14px;
-  background: #fbfcfd;
+  background: rgba(255, 255, 255, .42);
   color: #64748b;
   text-align: left;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.role-btn:hover { border-color: #9fd2bd; background: #f5fbf8; transform: translateY(-1px); }
+.role-btn:hover { border-color: #9fd2bd; background: rgba(255, 255, 255, .6); transform: translateY(-1px); }
 
 .role-btn > span:last-child { min-width: 0; }
 .role-btn strong, .role-btn small { display: block; }
 .role-btn strong { color: #24364b; font-size: .78rem; }
 .role-btn small { margin-top: 3px; color: #7b8a9b; font-size: .64rem; line-height: 1.35; }
-.role-btn-icon { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 9px; color: #64748b; background: #eef3f7; }
+.role-btn-icon { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 9px; color: #64748b; background: #eef3f7; }
 
 .role-btn.active {
   border-color: #159368;
-  background: linear-gradient(145deg, #f1fbf6, #f8fdfb);
+  background: linear-gradient(145deg, rgba(241, 251, 246, .68), rgba(248, 253, 251, .48));
   color: #08784f;
-  box-shadow: 0 8px 20px rgba(15, 143, 93, 0.12);
+  box-shadow: 0 9px 22px rgba(15, 143, 93, .14), inset 0 1px 0 #ffffff;
 }
 
 .role-btn.active strong { color: #08784f; }
@@ -136,26 +149,29 @@
 .signup-form {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 10px;
 }
 
 .input-field-group {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
 }
 
-.input-field-group > span { color: #344054; font-size: .72rem; font-weight: 750; }
+.input-field-group > span,
+.input-field-group > label { color: #344054; font-size: .72rem; font-weight: 750; }
 
 .input-field-group input {
   width: 100%;
-  height: 46px;
+  height: 44px;
   padding: 0 14px;
-  border: 1px solid #d8e1e8;
+  border: 1px solid rgba(190, 207, 199, .72);
   border-radius: 11px;
   font-size: 0.84rem;
   color: #1e293b;
-  background: #ffffff;
+  background: rgba(255, 255, 255, .54);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -171,10 +187,41 @@
   box-shadow: 0 0 0 3px rgba(15, 143, 93, 0.11);
 }
 
+.register-password-input {
+  position: relative;
+}
+
+.register-password-input input {
+  padding-right: 46px;
+}
+
+.register-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #708078;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color .18s ease, background .18s ease;
+}
+
+.register-password-toggle:hover {
+  color: #08784f;
+  background: #edf8f3;
+}
+
 .submit-signup-btn {
   width: 100%;
-  height: 48px;
-  margin-top: 4px;
+  height: 46px;
+  margin-top: 2px;
   background: linear-gradient(135deg, #0f9f6e, #08784f);
   color: #ffffff;
   border: none;
@@ -222,16 +269,38 @@
 
 /* Right Column: Branding & Social Logins */
 .brand-column {
-  padding: 38px 38px 30px;
+  padding: 28px 38px 24px;
   display: flex;
+  position: relative;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+  overflow: hidden;
   background:
-    radial-gradient(circle at 82% 18%, rgba(92, 220, 156, .18), transparent 25%),
-    linear-gradient(150deg, #0b2f36 0%, #0b3b38 46%, #092d2e 100%);
-  border-left: 1px solid #e2e8f0;
+    radial-gradient(circle at 82% 18%, rgba(92, 220, 156, .2), transparent 26%),
+    linear-gradient(150deg, rgba(7, 42, 40, .6) 0%, rgba(8, 57, 51, .5) 46%, rgba(6, 38, 38, .66) 100%);
+  border-left: 1px solid rgba(255, 255, 255, .14);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   height: 100%;
+}
+
+.brand-column::before {
+  position: absolute;
+  right: -110px;
+  bottom: -130px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(129, 244, 194, .12);
+  border-radius: 50%;
+  box-shadow: 0 0 0 55px rgba(109, 235, 180, .035), 0 0 0 110px rgba(109, 235, 180, .02);
+  content: "";
+  pointer-events: none;
+}
+
+.brand-column > * {
+  position: relative;
+  z-index: 1;
 }
 
 .top-brand-title {
@@ -252,7 +321,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px 0;
+  margin: 14px 0;
   text-align: center;
 }
 
@@ -264,8 +333,8 @@
 }
 
 .vidyut-logo-wrapper .brand-logo-img {
-  width: 90px;
-  height: 90px;
+  width: 78px;
+  height: 78px;
   filter: drop-shadow(0 8px 20px rgba(34, 197, 94, 0.35));
   transition: transform 0.3s ease;
 }
@@ -312,23 +381,23 @@
 }
 
 /* Divider line */
-.divider {
+.margdarshi-register-page .divider {
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 12px 0 8px 0;
+  margin: 8px 0 4px;
   color: #94a3b8;
   gap: 12px;
   width: 100%;
 }
 
-.divider hr {
+.margdarshi-register-page .divider hr {
   flex: 1;
   border: none;
   border-top: 1px solid #e2e8f0;
 }
 
-.divider span {
+.margdarshi-register-page .divider span {
   font-size: 0.78rem;
   font-weight: 600;
   color: #64748b;
@@ -346,14 +415,14 @@
 
 .google-signin-btn {
   width: 100%;
-  height: 52px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   padding: 0 16px;
   border-radius: 14px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, .68);
   border: 1px solid #ccd7df;
   color: #1e293b;
   font-size: 0.94rem;
@@ -386,6 +455,22 @@
   flex-shrink: 0;
 }
 
+.margdarshi-register-page button:focus-visible,
+.margdarshi-register-page a:focus-visible,
+.margdarshi-register-page input:focus-visible {
+  outline: 3px solid rgba(15, 143, 93, .3);
+  outline-offset: 3px;
+}
+
+/* Match the balanced 90% browser-zoom composition at normal desktop zoom. */
+@media (min-width: 769px) {
+  .margdarshi-card {
+    width: 111.111%;
+    transform: scale(.9);
+    transform-origin: center;
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .split-bg-left, .split-bg-right {
@@ -416,6 +501,40 @@
   }
 }
 
+@media (max-width: 640px) {
+  .margdarshi-register-page {
+    align-items: flex-start;
+    padding: 72px 14px 20px;
+    background:
+      linear-gradient(rgba(5, 28, 25, .78), rgba(6, 38, 32, .86)),
+      url("../assets/backgroundnight.png") center / cover no-repeat;
+  }
+
+  .margdarshi-card {
+    min-height: 0;
+    border-radius: 18px;
+    background: transparent;
+  }
+
+  .form-column {
+    padding: 28px 20px;
+  }
+
+  .role-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .role-btn {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .brand-column {
+    display: none;
+  }
+}
+
 .registration-principles {
   width: 100%;
   display: grid;
@@ -432,7 +551,7 @@
   border: 1px solid #dcebe4;
   border-radius: 12px;
   color: #c5d8d2;
-  background: rgba(255, 255, 255, .055);
+  background: rgba(255, 255, 255, .07);
   border-color: rgba(210, 245, 229, .14);
   font-size: 0.78rem;
   line-height: 1.45;

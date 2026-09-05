@@ -136,7 +136,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
         type="button"
         className="theme-toggle-btn"
         onClick={toggleTheme}
-        aria-label="Toggle Theme Mode"
+        aria-label={`Switch to ${theme === 'dark' ? 'day' : 'night'} mode`}
         title={`Switch to ${theme === 'dark' ? 'Day Mode' : 'Night Mode'}`}
       >
         {theme === 'dark' ? (
@@ -159,7 +159,14 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
           <div
             className="top-left-brand"
             onClick={onBack}
-            style={{ cursor: onBack ? "pointer" : "default" }}
+            onKeyDown={(event) => {
+              if (onBack && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                onBack();
+              }
+            }}
+            role={onBack ? "button" : undefined}
+            tabIndex={onBack ? 0 : undefined}
             title={onBack ? "Return to Landing Page" : undefined}
           >
             <div className="brand-logo-centered">
@@ -188,7 +195,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
                 <div className="input-wrapper">
-                  <Mail className="input-icon" size={35} />
+                  <Mail className="input-icon" size={18} />
                   <input
                     id="email"
                     name="email"
@@ -197,6 +204,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
                     onChange={handleChange}
                     placeholder="Enter your email"
                     autoComplete="email"
+                    required
                   />
                 </div>
               </div>
@@ -204,7 +212,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
               <div className="form-group">
                 <label htmlFor="password">Password</label>
                 <div className="input-wrapper">
-                  <LockKeyhole className="input-icon" size={35} />
+                  <LockKeyhole className="input-icon" size={18} />
                   <input
                     id="password"
                     name="password"
@@ -213,6 +221,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
                     onChange={handleChange}
                     placeholder="Enter your password"
                     autoComplete="current-password"
+                    required
                   />
                   <button
                     type="button"
@@ -225,7 +234,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
                 </div>
               </div>
 
-              {error && <p className="form-error">{error}</p>}
+              {error && <p className="form-error" role="alert">{error}</p>}
 
               <button
                 type="submit"
@@ -246,7 +255,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
                 </span>
                 <hr />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
+              <div className="demo-account-grid">
                 <button
                   type="button"
                   id="btn-demo-driver"
@@ -328,7 +337,7 @@ export default function LoginPage({ onLogin, onBack, onRegister }: LoginPageProp
             <p className="signup-text">
               Don&apos;t have an account?{" "}
               <a
-                href="#register"
+                href="#/register"
                 onClick={(e) => {
                   e.preventDefault();
                   if (onRegister) onRegister();

@@ -985,7 +985,7 @@ export function AutopilotView({ token, userName, onOpenWallet }: AutopilotViewPr
             </div>
           )}
 
-          {trip?.recovery && <AutopilotRecoveryPanel trip={trip} busy={recoveryBusy || Boolean(action)}
+          {trip?.recovery && <AutopilotRecoveryPanel trip={trip} token={token} busy={recoveryBusy || Boolean(action)}
             onApprove={() => void runAction('approve-reroute', () => approveAutopilotReroute(token, trip.id, trip.recovery!))}
             onRetry={() => void retryRecovery()} onPosition={updateRecoveryPosition} />}
 

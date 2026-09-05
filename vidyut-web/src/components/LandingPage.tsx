@@ -1,5 +1,15 @@
 import React from "react";
-import { Zap, ArrowRight, MapPin, BatteryCharging, Building2, ChevronRight } from "lucide-react";
+import {
+  Zap,
+  ArrowRight,
+  MapPin,
+  BatteryCharging,
+  Building2,
+  ChevronRight,
+  Route,
+  ShieldCheck,
+  LayoutDashboard,
+} from "lucide-react";
 import landingBgImg from "../assets/homepage.png";
 import "../css/landing.css";
 
@@ -14,8 +24,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onRegister,
   onExploreChargers,
 }) => {
-  const scrollToEcosystem = () => {
-    const el = document.getElementById("ecosystem-section");
+  const scrollToHowItWorks = () => {
+    const el = document.getElementById("how-it-works-section");
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     }
@@ -36,7 +46,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* TOP NAVBAR (0.1s entrance) */}
         <header className="navbar">
-          <a className="nav-brand" href="#home">
+          <button
+            type="button"
+            className="nav-brand"
+            aria-label="Back to the top"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
             <svg
               className="nav-brand-svg"
               viewBox="0 0 200 200"
@@ -55,12 +70,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 fill="url(#navVGrad)"
               />
             </svg>
-          </a>
+            <span className="nav-brand-title">VIDYUT</span>
+          </button>
 
           <nav>
             <ul className="nav-links">
               <li>
-                <button className="nav-link-btn" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                <button
+                  className="nav-link-btn"
+                  aria-current="page"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                >
                   Home
                 </button>
               </li>
@@ -70,7 +90,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </button>
               </li>
               <li>
-                <button className="nav-link-btn" onClick={scrollToEcosystem}>
+                <button className="nav-link-btn" onClick={scrollToHowItWorks}>
                   How It Works
                 </button>
               </li>
@@ -99,6 +119,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* HERO MAIN BODY CONTENT */}
         <div className="hero-content">
+          <div className="hero-eyebrow">
+            <span className="hero-eyebrow-dot" />
+            One platform · Three role workspaces
+          </div>
+
           {/* 0.3s VIDYUT Heading */}
           <h1 className="hero-heading">VIDYUT</h1>
 
@@ -111,15 +136,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             landowners and charging providers.
           </p>
 
+          <div className="hero-capabilities" aria-label="Vidyut capabilities">
+            <span><Route size={15} aria-hidden="true" /> Plan EV journeys</span>
+            <span><MapPin size={15} aria-hidden="true" /> Host charging sites</span>
+            <span><Building2 size={15} aria-hidden="true" /> Operate the network</span>
+          </div>
+
           {/* 0.9s CTA Buttons */}
           <div className="hero-cta-group">
             <button className="cta-primary" onClick={onExploreChargers}>
-              <span>⚡ Find a Charger</span>
+              <Zap size={18} aria-hidden="true" />
+              <span>Find a Charger</span>
             </button>
 
             <button className="cta-secondary" onClick={onRegister}>
               <span>Get Started</span>
-              <ArrowRight size={18} />
+              <ArrowRight size={18} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -127,23 +159,72 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* STATS ROW (1.1s entrance) */}
         <div className="hero-stats-bar">
           <div className="stat-item">
-            <span className="stat-number">10K+</span>
-            <span className="stat-label">Chargers</span>
+            <span className="stat-icon"><MapPin size={16} aria-hidden="true" /></span>
+            <span>
+              <span className="stat-number">9</span>
+              <span className="stat-label">Demo corridor stations</span>
+            </span>
           </div>
 
           <div className="stat-divider" />
 
           <div className="stat-item">
-            <span className="stat-number">25K+</span>
-            <span className="stat-label">Users</span>
+            <span className="stat-icon"><LayoutDashboard size={16} aria-hidden="true" /></span>
+            <span>
+              <span className="stat-number">3</span>
+              <span className="stat-label">Role workspaces</span>
+            </span>
           </div>
 
           <div className="stat-divider" />
 
           <div className="stat-item">
-            <span className="stat-number">500+</span>
-            <span className="stat-label">Locations</span>
+            <span className="stat-icon"><BatteryCharging size={16} aria-hidden="true" /></span>
+            <span>
+              <span className="stat-number">24/7</span>
+              <span className="stat-label">Journey monitoring</span>
+            </span>
           </div>
+        </div>
+      </section>
+
+      <section className="landing-process" id="how-it-works-section">
+        <div className="section-header process-header">
+          <span className="section-badge">HOW VIDYUT WORKS</span>
+          <h2 className="section-title">From the next charge to the whole network</h2>
+          <p className="section-subtitle">
+            Start in the workspace built for your role, take the next clear action,
+            and keep every update in one place.
+          </p>
+        </div>
+
+        <div className="process-rail">
+          <article className="process-step">
+            <span className="process-number">01</span>
+            <div className="process-icon"><ShieldCheck size={22} aria-hidden="true" /></div>
+            <div>
+              <h3>Choose your workspace</h3>
+              <p>EV owner, property host, or charging company—each role gets a focused flow.</p>
+            </div>
+          </article>
+
+          <article className="process-step">
+            <span className="process-number">02</span>
+            <div className="process-icon"><Route size={22} aria-hidden="true" /></div>
+            <div>
+              <h3>Take the next action</h3>
+              <p>Find a charger, list a suitable site, or manage station operations.</p>
+            </div>
+          </article>
+
+          <article className="process-step">
+            <span className="process-number">03</span>
+            <div className="process-icon"><LayoutDashboard size={22} aria-hidden="true" /></div>
+            <div>
+              <h3>Stay in control</h3>
+              <p>Track journeys, properties, connectors, bookings, and incidents from one dashboard.</p>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -160,15 +241,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         <div className="ecosystem-grid">
           {/* Card 1: EV Owners */}
-          <div className="ecosystem-card">
+          <div className="ecosystem-card ecosystem-card-driver">
             <div>
+              <span className="card-role-label">DRIVER WORKSPACE</span>
               <div className="card-icon-box">
                 <BatteryCharging size={28} />
               </div>
               <h3 className="card-title">EV Drivers</h3>
               <p className="card-desc">
-                Locate high-speed chargers, reserve slots in advance, and pay automatically
-                with real-time AI battery diagnostics.
+                Find compatible chargers, reserve a slot, and keep trips on track with
+                battery-aware route planning.
               </p>
             </div>
             <button className="card-link-btn" onClick={onExploreChargers}>
@@ -178,15 +260,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Card 2: Landowners */}
-          <div className="ecosystem-card">
+          <div className="ecosystem-card ecosystem-card-host">
             <div>
+              <span className="card-role-label">HOST WORKSPACE</span>
               <div className="card-icon-box">
                 <MapPin size={28} />
               </div>
               <h3 className="card-title">Landowners & Hosts</h3>
               <p className="card-desc">
-                Turn your parking spaces or real estate into passive revenue streams by hosting
-                Vidyut ultra-fast charging hardware.
+                List suitable properties, review operator opportunities, and monitor hosted
+                charging locations in one workspace.
               </p>
             </div>
             <button className="card-link-btn" onClick={onRegister}>
@@ -196,15 +279,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Card 3: Businesses */}
-          <div className="ecosystem-card">
+          <div className="ecosystem-card ecosystem-card-company">
             <div>
+              <span className="card-role-label">COMPANY WORKSPACE</span>
               <div className="card-icon-box">
                 <Building2 size={28} />
               </div>
               <h3 className="card-title">Companies & Fleets</h3>
               <p className="card-desc">
-                Manage commercial EV fleets, set corporate charging policies, and scale your charging
-                network with central analytics.
+                Monitor stations, connectors, bookings, and incidents from a role-scoped
+                operations workspace.
               </p>
             </div>
             <button className="card-link-btn" onClick={onRegister}>
@@ -215,18 +299,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
+      <section className="landing-final-cta">
+        <div>
+          <span className="final-cta-kicker">YOUR NEXT MOVE, SIMPLIFIED</span>
+          <h2>Start with the Vidyut workspace built for you.</h2>
+          <p>Explore charging now or create an account to manage your role-specific workflow.</p>
+        </div>
+        <div className="final-cta-actions">
+          <button className="cta-secondary final-cta-secondary" onClick={onExploreChargers}>
+            <MapPin size={18} aria-hidden="true" />
+            <span>Explore Chargers</span>
+          </button>
+          <button className="cta-primary" onClick={onRegister}>
+            <span>Create Account</span>
+            <ArrowRight size={18} aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
       {/* FOOTER */}
       <footer className="landing-footer">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="landing-footer-brand">
           <Zap size={18} color="#22c55e" />
-          <span style={{ color: "#ffffff", fontWeight: 700 }}>VIDYUT</span>
+          <strong>VIDYUT</strong>
           <span>© 2026 Vidyut EV Ecosystem. All rights reserved.</span>
         </div>
-        <div style={{ display: "flex", gap: 24 }}>
-          <button className="nav-link-btn" style={{ fontSize: "0.85rem" }}>Privacy Policy</button>
-          <button className="nav-link-btn" style={{ fontSize: "0.85rem" }}>Terms of Service</button>
-          <button className="nav-link-btn" style={{ fontSize: "0.85rem" }}>Contact Support</button>
-        </div>
+        <p className="landing-footer-note">Built for EV owners, property hosts, and charging operators.</p>
       </footer>
     </div>
   );

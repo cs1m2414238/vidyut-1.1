@@ -4,3 +4,32 @@
 .agent-recovery-panel p,.agent-recovery-panel li{font-size:13px;line-height:1.6}.agent-recovery-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:20px 0}
 .agent-recovery-metrics dt{font-size:12px;opacity:.75}.agent-recovery-metrics dd{font-size:15px;font-weight:650;margin:5px 0 0}
 .agent-recovery-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}.agent-recovery-actions button{background:#087b57;color:white;border:0;padding:11px 17px;border-radius:9px;cursor:pointer}.agent-recovery-actions button:disabled{opacity:.5;cursor:wait}.agent-recovery-actions input{width:75px;padding:7px;border:1px solid #bcc7c3;border-radius:6px}
+.x402-payment-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+  margin: 14px 0;
+  border: 1px solid rgba(35, 120, 255, .24);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(35, 120, 255, .08), rgba(78, 43, 188, .07));
+}
+
+.x402-payment-strip > div { display: grid; gap: 3px; }
+.x402-payment-strip small, .x402-payment-strip span { color: var(--text-muted, #687286); }
+.x402-payment-strip a { color: #2858c5; font-weight: 700; font-size: .82rem; }
+.x402-payment-strip > p { grid-column: 1 / -1; margin: 0; color: #9f2727; }
+.x402-protocol-badge { width: max-content; padding: 3px 7px; border-radius: 999px; background: #e9f0ff; color: #244ca7 !important; font-size: .72rem; font-weight: 800; letter-spacing: .03em; }
+.x402-booking_confirmed { border-color: rgba(18, 139, 85, .35); background: rgba(18, 139, 85, .08); }
+.x402-compensation_pending, .x402-settled_booking_failed { border-color: rgba(192, 93, 21, .4); background: rgba(192, 93, 21, .08); }
+.x402-wallet-handoff { display: grid; gap: 10px; width: 100%; }
+.x402-wallet-handoff p { margin: 0; }
+.x402-wallet-handoff label { display: grid; gap: 6px; font-weight: 700; }
+.x402-wallet-handoff textarea { width: 100%; resize: vertical; border: 1px solid #c7cddd; border-radius: 10px; padding: 10px; font: 12px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.x402-wallet-handoff details { width: 100%; }
+.x402-wallet-handoff pre { overflow: auto; max-height: 220px; padding: 10px; border-radius: 10px; background: #111827; color: #dce7ff; font-size: 11px; }
+.x402-payment-error { color: #a12525; font-weight: 700; }
+
+@media (max-width: 720px) {
+  .x402-payment-strip { grid-template-columns: 1fr; }
+}

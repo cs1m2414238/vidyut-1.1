@@ -22,6 +22,7 @@
     radial-gradient(circle at 78% 18%, rgba(52, 211, 153, .24), transparent 29%),
     linear-gradient(125deg, #071b17 0%, #0b3128 58%, #085f45 100%);
   box-shadow: 0 18px 44px rgba(7, 27, 23, .15);
+  margin-bottom: 22px;
 }
 
 .autopilot-hero::before {

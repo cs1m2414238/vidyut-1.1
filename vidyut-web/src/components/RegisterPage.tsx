@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Building2, CarFront, HousePlug, Leaf, ShieldCheck, Zap } from "lucide-react";
+import { Building2, CarFront, Eye, EyeOff, HousePlug, Leaf, ShieldCheck, Zap } from "lucide-react";
 import { useGoogleLogin } from "@react-oauth/google";
 import "./VidyutRegister.css";
 import {
@@ -29,9 +29,9 @@ const roleOptions: Array<{
   detail: string;
   icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
 }> = [
-  { id: "EV_OWNER", label: "EV Owner", detail: "Charge, book and manage vehicles", icon: CarFront },
-  { id: "LANDOWNER", label: "Charger Host", detail: "List chargers and earn securely", icon: HousePlug },
-  { id: "COMPANY_ADMIN", label: "Company Admin", detail: "Operate a charging network", icon: Building2 },
+  { id: "EV_OWNER", label: "EV Owner", detail: "Plan routes and manage vehicles", icon: CarFront },
+  { id: "LANDOWNER", label: "Charger Host", detail: "List sites and track earnings", icon: HousePlug },
+  { id: "COMPANY_ADMIN", label: "Company Admin", detail: "Operate stations and incidents", icon: Building2 },
 ];
 
 const GoogleIcon = () => (
@@ -66,6 +66,7 @@ export default function VidyutRegisterPage({ onRegistered, onLogin }: RegisterPa
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const finishAuthentication = (auth: AuthData) => {
     saveAuthSession(auth);
@@ -188,10 +189,31 @@ export default function VidyutRegisterPage({ onRegistered, onLogin }: RegisterPa
               <span>Email address</span>
               <input id="register-email" name="email" type="email" placeholder="you@example.com" value={formData.email} onChange={handleChange} autoComplete="email" required />
             </label>
-            <label className="input-field-group" htmlFor="register-password">
-              <span>Password</span>
-              <input id="register-password" name="password" type="password" placeholder="Minimum 8 characters" value={formData.password} onChange={handleChange} autoComplete="new-password" minLength={8} required />
-            </label>
+            <div className="input-field-group">
+              <label htmlFor="register-password">Password</label>
+              <div className="register-password-input">
+                <input
+                  id="register-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Minimum 8 characters"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                />
+                <button
+                  type="button"
+                  className="register-password-toggle"
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
+            </div>
 
             {error && <p className="signup-error-msg" role="alert">{error}</p>}
 
@@ -223,7 +245,7 @@ export default function VidyutRegisterPage({ onRegistered, onLogin }: RegisterPa
           <div className="top-brand-title"><span className="brand-badge-pill">VIDYUT</span></div>
           <div className="brand-logo-section">
             <VidyutLogo />
-            <h2>One account. The right workspace.</h2>
+            <h2>One account. Your workspace.</h2>
             <p>Your selected role shapes the dashboard, profile steps and next actions—without slowing down sign-up.</p>
             <div className="registration-principles">
               <p><Zap size={17} /><span><strong>Fast start</strong>Only name, email and password are required now.</span></p>

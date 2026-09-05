@@ -429,6 +429,15 @@ export interface AutopilotRecovery {
   remainingCost?: number;
   estimatedArrivalTime?: string;
   routeEngine?: string;
+  paymentId?: string;
+  paymentStatus?: import('./x402').X402PaymentStatus;
+  paymentAmountAtomic?: number;
+  paymentDisplayAmount?: number;
+  paymentNetwork?: string;
+  paymentTxId?: string;
+  paymentBookingId?: number;
+  paymentExplorerUrl?: string;
+  paymentFailureReason?: string;
 }
 
 export async function runAutopilotRecovery(token: string, tripId: number, incidentId: string): Promise<AutopilotTrip> {

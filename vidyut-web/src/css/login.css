@@ -36,8 +36,8 @@ input {
   border-radius: 30px;
   border: 1px solid rgba(255, 255, 255, 0.45);
   background: rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: #ffffff;
   font-size: 0.88rem;
   font-weight: 700;
@@ -71,6 +71,9 @@ input {
   justify-content: center;
   background: url("../assets/backgroundnight.png") center / cover no-repeat;
   transition: background-image 400ms ease-in-out;
+  height: 100dvh;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 /* DAY MODE BACKGROUND SWITCH */
@@ -97,9 +100,8 @@ input {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  padding: 0 80px;
-  transform: scale(0.82);
-  transform-origin: center center;
+  padding: 0 56px;
+  gap: 48px;
 }
 
 /* LEFT SIDE: BRANDING HIGHER AT 30-35% FROM TOP */
@@ -124,6 +126,16 @@ input {
   display: flex;
   flex-direction: column;
   align-items: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: default;
+}
+
+.top-left-brand[role="button"] {
+  cursor: pointer;
 }
 
 /* LOGO CENTERED DIRECTLY ABOVE VIDYUT TITLE */
@@ -206,19 +218,36 @@ input {
 }
 
 .glass-card {
-  width: min(580px, 100%);
-  padding: 52px 48px;
+  position: relative;
+  overflow: hidden;
+  width: min(500px, 100%);
+  padding: 28px 30px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.35);
-  border: 1.5px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .58), rgba(226, 239, 234, .36));
+  border: 1px solid rgba(255, 255, 255, .6);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .72);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition: transform 200ms ease, box-shadow 200ms ease, background 300ms ease;
 }
 
+.glass-card::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .32), transparent 42%, rgba(71, 211, 143, .06));
+  content: "";
+  pointer-events: none;
+}
+
+.glass-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 [data-theme="light"] .glass-card {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.18);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .56), rgba(240, 247, 245, .34));
+  border: 1px solid rgba(255, 255, 255, .7);
+  box-shadow: 0 25px 70px rgba(15, 23, 42, .22), inset 0 1px 0 rgba(255, 255, 255, .82);
 }
 
 [data-theme="light"] .theme-toggle-btn {
@@ -236,13 +265,13 @@ input {
 } */
 
 .card-header {
-  margin-bottom: 28px;
+  margin-bottom: 18px;
   text-align: center;
 }
 
 .card-header h2 {
   margin: 0 0 6px;
-  font-size: 2.3rem;
+  font-size: 2.05rem;
   font-weight: 750;
   color: #0f172a;
   letter-spacing: -0.02em;
@@ -257,7 +286,7 @@ input {
 /* FORM INPUTS & LABELS - GLASS INPUTS WITH FOCUS ANIMATION & GREEN BORDER */
 .login-form {
   display: grid;
-  gap: 18px;
+  gap: 15px;
 }
 
 .form-group {
@@ -272,16 +301,17 @@ input {
 }
 
 .input-wrapper {
-  height: 56px;
+  height: 50px;
   padding: 0 18px;
   display: flex;
   align-items: center;
   gap: 12px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, .52);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, .7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65);
   transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease, background 200ms ease;
 }
 
@@ -366,7 +396,7 @@ input {
 
 /* PRIMARY BUTTON - GRADIENT #16A34A to #22C55E WITH GLOW */
 .login-button {
-  height: 56px;
+  height: 50px;
   margin-top: 4px;
   display: inline-flex;
   align-items: center;
@@ -399,7 +429,7 @@ input {
 }
 
 /* DIVIDER */
-.divider {
+.login-page .divider {
   margin: 24px 0 18px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -408,12 +438,12 @@ input {
   color: #64748b;
 }
 
-.divider .line {
+.login-page .divider .line {
   height: 1px;
   background: rgba(148, 163, 184, 0.35);
 }
 
-.divider p {
+.login-page .divider p {
   margin: 0;
   font-size: 0.82rem;
   font-weight: 600;
@@ -435,7 +465,7 @@ input {
   gap: 10px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.6);
   color: #0f172a;
   font-size: 0.95rem;
@@ -462,17 +492,48 @@ input {
 }
 
 .signup-text {
-  margin: 24px 0 0;
+  margin: 18px 0 0;
   text-align: center;
   font-size: 0.92rem;
   color: #475569;
+}
+
+.demo-account-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.demo-account-grid > button {
+  min-width: 0;
+  min-height: 48px;
+  background: rgba(255, 255, 255, .42) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  line-height: 1.25;
+}
+
+.login-page .demo-accounts-box .divider span {
+  color: #475569 !important;
+  font-weight: 750;
+}
+
+.demo-account-grid > #btn-demo-driver { color: #08768a !important; }
+.demo-account-grid > #btn-demo-host { color: #08784f !important; }
+.demo-account-grid > #btn-demo-company { color: #925b00 !important; }
+
+.login-page button:focus-visible,
+.login-page a:focus-visible,
+.login-page input:focus-visible {
+  outline: 3px solid rgba(34, 197, 94, .4);
+  outline-offset: 3px;
 }
 
 .login-page .socialconnect { display: flex; align-items: center; justify-content: center; width: 100%; }
 .login-page .google-signin-btn {
   display: inline-flex;
   width: 100%;
-  height: 52px;
+  height: 48px;
   align-items: center;
   justify-content: center;
   gap: 12px;
@@ -480,7 +541,9 @@ input {
   border: 1px solid rgba(203, 213, 225, .9);
   border-radius: 15px;
   color: #1e293b;
-  background: rgba(255, 255, 255, .96);
+  background: rgba(255, 255, 255, .66);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 5px 16px rgba(15, 23, 42, .09);
   font: inherit;
   font-size: .96rem;
@@ -494,13 +557,30 @@ input {
 .login-page .google-signin-btn:disabled { opacity: .62; cursor: not-allowed; }
 .login-page .google-btn-icon { width: 24px; height: 24px; flex: 0 0 auto; }
 
+/* Match the balanced 90% browser-zoom composition at normal desktop zoom. */
+@media (min-width: 961px) {
+  .login-container {
+    width: 111.111%;
+    height: 111.111%;
+    transform: scale(.9);
+    transform-origin: center;
+  }
+
+  .theme-toggle-btn {
+    transform: scale(.9);
+    transform-origin: top right;
+  }
+}
+
 /* RESPONSIVE LAYOUT */
 @media (max-width: 960px) {
   .login-container {
     grid-template-columns: 1fr;
-    padding: 20px;
+    max-width: 580px;
+    padding: 68px 0 24px;
     transform: none;
     height: auto;
+    gap: 24px;
   }
 
   .brand-side {
@@ -508,6 +588,7 @@ input {
     margin-bottom: 30px;
     padding-top: 20px;
     margin-top: 0;
+    grid-row: 2;
   }
 .socialconnect {
   display: flex;
@@ -565,9 +646,48 @@ input {
 
   .glass-card-side {
     justify-content: center;
+    grid-row: 1;
   }
 
   .glass-card {
-    padding: 36px 24px;
+    padding: 30px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-page {
+    align-items: flex-start;
+    padding: 0 14px 20px;
+  }
+
+  .theme-toggle-btn {
+    top: 14px;
+    right: 14px;
+    padding: 9px 12px;
+  }
+
+  .login-container {
+    padding-top: 64px;
+  }
+
+  .brand-side {
+    display: none;
+  }
+
+  .glass-card {
+    padding: 28px 20px;
+    border-radius: 18px;
+  }
+
+  .card-header {
+    margin-bottom: 22px;
+  }
+
+  .card-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .demo-account-grid {
+    grid-template-columns: 1fr;
   }
 }
